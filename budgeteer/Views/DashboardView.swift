@@ -334,6 +334,27 @@ struct DashboardView: View {
     private var spendingTrendsCard: some View {
         let dailySpending = firebaseService.dailySpendingForMonth(selectedMonth)
         
+        // Calculate all the stats outside the VStack
+        let totalDays = dailySpending.count
+        let maxDaily = dailySpending.values.max() ?? 0
+        
+        // Calculate daily average using the same logic as Monthly Overview
+        let calendar = Calendar.current
+        let today = Date()
+        let isCurrentMonth = calendar.isDate(selectedMonth, equalTo: today, toGranularity: .month)
+        
+        let daysToUse: Int
+        if isCurrentMonth {
+            // For current month - days passed so far (minimum 1)
+            daysToUse = max(calendar.component(.day, from: today), 1)
+        } else {
+            // For past/future months - total days in month
+            daysToUse = calendar.range(of: .day, in: .month, for: selectedMonth)?.count ?? 30
+        }
+        
+        let totalSpent = dailySpending.values.reduce(0, +)
+        let avgDaily = daysToUse > 0 ? totalSpent / Double(daysToUse) : 0.0
+        
         return VStack(alignment: .leading, spacing: 16) {
             Text("Spending Trends")
                 .font(.headline)
@@ -393,11 +414,6 @@ struct DashboardView: View {
                 } else {
                     alternativeLineChartView(dailySpending: dailySpending)
                 }
-                
-                // Summary stats
-                let totalDays = dailySpending.count
-                let avgDaily = dailySpending.values.reduce(0, +) / Double(max(totalDays, 1))
-                let maxDaily = dailySpending.values.max() ?? 0
                 
                 HStack {
                     VStack(alignment: .leading, spacing: 4) {
