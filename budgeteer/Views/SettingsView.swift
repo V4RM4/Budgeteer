@@ -38,7 +38,9 @@ struct SettingsView: View {
                 // Account Actions Section
                 Section {
                     // Sign Out Button
-                    Button(action: { showingSignOutAlert = true }) {
+                    Button(action: { 
+                        showingSignOutAlert = true 
+                    }) {
                         HStack {
                             Image(systemName: "rectangle.portrait.and.arrow.right")
                                 .foregroundColor(.orange)
@@ -113,6 +115,7 @@ struct SettingsView: View {
                 Button("Cancel", role: .cancel) { }
                 Button("Sign Out", role: .destructive) {
                     firebaseService.signOut()
+                    AppStateManager.shared.resetToSplash()
                 }
             } message: {
                 Text("Are you sure you want to sign out?")

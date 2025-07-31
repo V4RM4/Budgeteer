@@ -37,10 +37,11 @@ class FirebaseService: ObservableObject {
                 // Wait for user document validation first
                 self?.loadUser(userId: user.uid)
             } else {
-                self?.isAuthenticated = false
-                self?.user = nil
-                self?.expenses = []
-                self?.expenseListener?.remove()
+                            self?.isAuthenticated = false
+            self?.user = nil
+            self?.expenses = []
+            self?.expenseListener?.remove()
+            NotificationCenter.default.post(name: Notification.Name("userSignedOut"), object: nil)
             }
         }
     }
@@ -71,6 +72,7 @@ class FirebaseService: ObservableObject {
                     self.user = newUser
                     self.isAuthenticated = true
                     self.isLoading = false
+                    NotificationCenter.default.post(name: Notification.Name("userAuthenticated"), object: nil)
                 }
             } catch {
                 // If Firestore save fails, delete the auth user to prevent orphaned accounts
@@ -108,6 +110,7 @@ class FirebaseService: ObservableObject {
                     self.user = user
                     self.isAuthenticated = true
                     self.isLoading = false
+                    NotificationCenter.default.post(name: Notification.Name("userAuthenticated"), object: nil)
                 }
                 self.loadExpenses()
             } else {
@@ -204,10 +207,11 @@ class FirebaseService: ObservableObject {
                 }
                 
                 if let data = snapshot?.data(), let user = AppUser.fromDictionary(data) {
-                    // Only set authenticated to true when user document is successfully loaded
-                    self?.user = user
-                    self?.isAuthenticated = true
-                    self?.loadExpenses()
+                                    // Only set authenticated to true when user document is successfully loaded
+                self?.user = user
+                self?.isAuthenticated = true
+                self?.loadExpenses()
+                NotificationCenter.default.post(name: Notification.Name("userAuthenticated"), object: nil)
                 } else {
                     // User document doesn't exist in Firestore - sign them out
                     print("User document not found in Firestore for uid: \(userId)")

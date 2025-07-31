@@ -8,17 +8,58 @@
 import SwiftUI
 
 struct ContentView: View {
+    @StateObject private var appStateManager = AppStateManager.shared
     @StateObject private var firebaseService = FirebaseService.shared
     
     var body: some View {
-        Group {
-            if firebaseService.isAuthenticated {
-                MainTabView()
-            } else {
-                AuthenticationView()
+        ZStack {
+            // Always show splash screen first
+            SplashScreenView()
+                .opacity(appStateManager.currentState == .splash ? 1 : 0)
+                .animation(.easeInOut(duration: 0.3), value: appStateManager.currentState)
+            
+            // Overlay the appropriate view based on state
+            Group {
+                switch appStateManager.currentState {
+                case .splash:
+                    Color.clear
+                        .onAppear {
+                            // Show splash for 2 seconds, then move to next state
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+                                withAnimation(.easeInOut(duration: 0.5)) {
+                                    if firebaseService.isAuthenticated {
+                                        appStateManager.showMain()
+                                    } else if appStateManager.hasSeenWalkthrough {
+                                        appStateManager.showAuthentication()
+                                    } else {
+                                        appStateManager.showWalkthrough()
+                                    }
+                                }
+                            }
+                        }
+                    
+                case .walkthrough:
+                    WalkthroughView()
+                        .transition(.opacity.combined(with: .scale(scale: 0.95)))
+                        .onReceive(NotificationCenter.default.publisher(for: Notification.Name("walkthroughCompleted"))) { _ in
+                            appStateManager.completeWalkthrough()
+                        }
+                    
+                case .authentication:
+                    AuthenticationView()
+                        .transition(.opacity.combined(with: .scale(scale: 0.95)))
+                        .onReceive(NotificationCenter.default.publisher(for: Notification.Name("userAuthenticated"))) { _ in
+                            appStateManager.showMain()
+                        }
+                    
+                case .main:
+                    MainTabView()
+                        .transition(.opacity.combined(with: .scale(scale: 0.95)))
+                }
             }
+            .opacity(appStateManager.currentState == .splash ? 0 : 1)
+            .animation(.easeInOut(duration: 0.5), value: appStateManager.currentState)
         }
-        .animation(.easeInOut(duration: 0.3), value: firebaseService.isAuthenticated)
     }
 }
 
