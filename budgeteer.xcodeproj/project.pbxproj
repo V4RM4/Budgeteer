@@ -14,15 +14,30 @@
 		E911C62C2E38E3A700F08DE3 /* FirebaseDatabase in Frameworks */ = {isa = PBXBuildFile; productRef = E911C62B2E38E3A700F08DE3 /* FirebaseDatabase */; };
 		E911C62E2E38E3A700F08DE3 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = E911C62D2E38E3A700F08DE3 /* FirebaseFirestore */; };
 		E911C6302E38E3A700F08DE3 /* FirebaseStorage in Frameworks */ = {isa = PBXBuildFile; productRef = E911C62F2E38E3A700F08DE3 /* FirebaseStorage */; };
+		E9EAA1D72E3BD91F00137AFA /* GoogleSignIn in Frameworks */ = {isa = PBXBuildFile; productRef = E9EAA1D62E3BD91F00137AFA /* GoogleSignIn */; };
+		E9EAA1D92E3BD91F00137AFA /* GoogleSignInSwift in Frameworks */ = {isa = PBXBuildFile; productRef = E9EAA1D82E3BD91F00137AFA /* GoogleSignInSwift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		E92F8E192E38E0C400EFAEB8 /* budgeteer.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = budgeteer.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		E9EAA1E32E3BE1BD00137AFA /* Exceptions for "budgeteer" folder in "budgeteer" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = E92F8E182E38E0C400EFAEB8 /* budgeteer */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		E92F8E1B2E38E0C400EFAEB8 /* budgeteer */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				E9EAA1E32E3BE1BD00137AFA /* Exceptions for "budgeteer" folder in "budgeteer" target */,
+			);
 			path = budgeteer;
 			sourceTree = "<group>";
 		};
@@ -33,7 +48,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E9EAA1D92E3BD91F00137AFA /* GoogleSignInSwift in Frameworks */,
 				E911C62C2E38E3A700F08DE3 /* FirebaseDatabase in Frameworks */,
+				E9EAA1D72E3BD91F00137AFA /* GoogleSignIn in Frameworks */,
 				E911C6242E38E3A700F08DE3 /* FirebaseAnalytics in Frameworks */,
 				E911C6282E38E3A700F08DE3 /* FirebaseAuth in Frameworks */,
 				E911C62A2E38E3A700F08DE3 /* FirebaseCore in Frameworks */,
@@ -89,6 +106,8 @@
 				E911C62B2E38E3A700F08DE3 /* FirebaseDatabase */,
 				E911C62D2E38E3A700F08DE3 /* FirebaseFirestore */,
 				E911C62F2E38E3A700F08DE3 /* FirebaseStorage */,
+				E9EAA1D62E3BD91F00137AFA /* GoogleSignIn */,
+				E9EAA1D82E3BD91F00137AFA /* GoogleSignInSwift */,
 			);
 			productName = budgeteer;
 			productReference = E92F8E192E38E0C400EFAEB8 /* budgeteer.app */;
@@ -120,6 +139,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				E911C6222E38E3A700F08DE3 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
+				E9EAA1D52E3BD91F00137AFA /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = E92F8E1A2E38E0C400EFAEB8 /* Products */;
@@ -280,10 +300,11 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "";
 				DEVELOPMENT_TEAM = 7SU3CL4AR2;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = "";
+				INFOPLIST_FILE = budgeteer/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "";
 				INFOPLIST_KEY_LSApplicationCategoryType = "";
 				INFOPLIST_KEY_NSCameraUsageDescription = "This app needs access to camera to capture photos of receipts for expense tracking.";
@@ -315,10 +336,11 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "";
 				DEVELOPMENT_TEAM = 7SU3CL4AR2;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = "";
+				INFOPLIST_FILE = budgeteer/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "";
 				INFOPLIST_KEY_LSApplicationCategoryType = "";
 				INFOPLIST_KEY_NSCameraUsageDescription = "This app needs access to camera to capture photos of receipts for expense tracking.";
@@ -375,6 +397,14 @@
 				minimumVersion = 12.0.0;
 			};
 		};
+		E9EAA1D52E3BD91F00137AFA /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/google/GoogleSignIn-iOS";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 9.0.0;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -412,6 +442,16 @@
 			isa = XCSwiftPackageProductDependency;
 			package = E911C6222E38E3A700F08DE3 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
 			productName = FirebaseStorage;
+		};
+		E9EAA1D62E3BD91F00137AFA /* GoogleSignIn */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = E9EAA1D52E3BD91F00137AFA /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */;
+			productName = GoogleSignIn;
+		};
+		E9EAA1D82E3BD91F00137AFA /* GoogleSignInSwift */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = E9EAA1D52E3BD91F00137AFA /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */;
+			productName = GoogleSignInSwift;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
