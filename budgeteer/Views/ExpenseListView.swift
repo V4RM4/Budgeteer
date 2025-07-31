@@ -247,20 +247,27 @@ struct ExpenseListView: View {
             
             if searchText.isEmpty && selectedCategory == nil {
                 Button(action: { showingAddExpense = true }) {
-                    Text("Add Your First Expense")
-                        .fontWeight(.semibold)
-                        .foregroundColor(.white)
-                        .padding()
-                        .background(
-                            LinearGradient(
-                                gradient: Gradient(colors: [.blue, .purple]),
-                                startPoint: .leading,
-                                endPoint: .trailing
-                            )
-                        )
-                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                    HStack(spacing: 10) {
+                        Image(systemName: "plus.circle.fill")
+                            .font(.title3)
+                            .foregroundColor(.white)
+                        
+                        Text("Add Your First Expense")
+                            .font(.body)
+                            .fontWeight(.semibold)
+                            .foregroundColor(.white)
+                    }
+                    .padding(.horizontal, 20)
+                    .padding(.vertical, 14)
+                    .background(
+                        RoundedRectangle(cornerRadius: 14)
+                            .fill(Color.blue)
+                            .shadow(color: .blue.opacity(0.3), radius: 6, x: 0, y: 3)
+                    )
                 }
-                .padding(.top, 8)
+                .buttonStyle(PlainButtonStyle())
+                .padding(.top, 16)
+                .padding(.horizontal, 20)
             }
             
             Spacer()

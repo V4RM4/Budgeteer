@@ -217,6 +217,8 @@ struct SettingsView: View {
                 Text("Switch between light and dark themes")
                     .font(.caption)
                     .foregroundColor(.secondary)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.8)
             }
             
             Spacer()
