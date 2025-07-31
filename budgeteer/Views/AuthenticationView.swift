@@ -15,6 +15,7 @@ struct AuthenticationView: View {
     @FocusState private var passwordFocused: Bool
     @FocusState private var nameFocused: Bool
     @FocusState private var confirmPasswordFocused: Bool
+    @Environment(\.colorScheme) private var colorScheme
     
     @State private var password = ""
     @State private var fullName = ""
@@ -344,6 +345,25 @@ struct AuthenticationView: View {
                 createAccountButton
                 switchToSignInButton
             }
+            
+            // Divider
+            HStack {
+                Rectangle()
+                    .frame(height: 1)
+                    .foregroundStyle(.secondary.opacity(0.3))
+                
+                Text("or")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .padding(.horizontal, 16)
+                
+                Rectangle()
+                    .frame(height: 1)
+                    .foregroundStyle(.secondary.opacity(0.3))
+            }
+            
+            // Google Sign-In button - always visible
+            googleSignInButton
         }
     }
     
@@ -357,7 +377,7 @@ struct AuthenticationView: View {
                         .progressViewStyle(CircularProgressViewStyle(tint: .white))
                         .scaleEffect(0.9)
                 } else {
-                    Text("Continue")
+                    Text("Continue with Email")
                         .font(.body.weight(.semibold))
                 }
             }
@@ -436,6 +456,40 @@ struct AuthenticationView: View {
         }
         .font(.subheadline)
         .foregroundStyle(.blue)
+        .buttonStyle(.plain)
+    }
+    
+    private var googleSignInButton: some View {
+        Button(action: signInWithGoogle) {
+            HStack(spacing: 12) {
+                if authViewModel.isLoading {
+                    ProgressView()
+                        .progressViewStyle(CircularProgressViewStyle(tint: .primary))
+                        .scaleEffect(0.9)
+                } else {
+                    // Official Google logo from assets - different for light/dark mode
+                    Image(colorScheme == .dark ? "google_logo_dark" : "google_logo")
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                        .frame(width: 30, height: 30)
+                    
+                    Text("Continue with Google")
+                        .font(.body.weight(.medium))
+                        .foregroundStyle(.primary)
+                }
+            }
+            .frame(maxWidth: .infinity)
+            .frame(height: 50)
+            .background {
+                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    .fill(colorScheme == .dark ? Color(.systemGray6) : Color(.systemBackground))
+                    .overlay {
+                        RoundedRectangle(cornerRadius: 12, style: .continuous)
+                            .stroke(colorScheme == .dark ? Color(.systemGray4) : .secondary.opacity(0.3), lineWidth: 1)
+                    }
+            }
+        }
+        .disabled(authViewModel.isLoading)
         .buttonStyle(.plain)
     }
     
@@ -523,6 +577,12 @@ struct AuthenticationView: View {
                 fullName: fullName.trimmingCharacters(in: .whitespacesAndNewlines),
                 password: password
             )
+        }
+    }
+    
+    private func signInWithGoogle() {
+        Task {
+            await authViewModel.signInWithGoogle()
         }
     }
     

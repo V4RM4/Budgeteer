@@ -25,7 +25,7 @@ class FirebaseService: ObservableObject {
     @Published var isLoading = false
     @Published var errorMessage: String?
     
-    private let db = Firestore.firestore()
+    let db = Firestore.firestore()
     private let storage = Storage.storage()
     private var expenseListener: ListenerRegistration?
     private var authListener: AuthStateDidChangeListenerHandle?
@@ -188,7 +188,7 @@ class FirebaseService: ObservableObject {
     
     // MARK: - User Management
     
-    private func saveUser(_ user: AppUser) async throws {
+    func saveUser(_ user: AppUser) async throws {
         try await db.collection("users").document(user.id).setData(user.toDictionary())
     }
     
@@ -271,7 +271,7 @@ class FirebaseService: ObservableObject {
             }
     }
     
-    private func loadExpenses() {
+    func loadExpenses() {
         guard let userId = user?.id else { return }
         loadExpensesDirectly(userId: userId)
     }
