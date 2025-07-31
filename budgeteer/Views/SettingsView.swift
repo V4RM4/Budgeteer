@@ -9,6 +9,7 @@ import SwiftUI
 
 struct SettingsView: View {
     @StateObject private var firebaseService = FirebaseService.shared
+    @StateObject private var darkModeManager = DarkModeManager.shared
     @State private var showingBudgetEditor = false
     @State private var showingSignOutAlert = false
     @State private var showingDeleteAccountAlert = false
@@ -17,16 +18,21 @@ struct SettingsView: View {
     var body: some View {
         NavigationStack {
             List {
-                // Profile Section
                 Section {
                     profileContent
                 }
                 
-                // Budget Section
                 Section {
                     budgetContent
                 } header: {
                     Text("Budget")
+                }
+                
+                // Appearance Section
+                Section {
+                    appearanceContent
+                } header: {
+                    Text("Appearance")
                 }
                 
                 // Account Actions Section
@@ -123,7 +129,7 @@ struct SettingsView: View {
                     }
                 }
             } message: {
-                Text("⚠️ WARNING: This will permanently delete your account, all expenses, and cannot be undone. You will lose all your data forever.")
+                Text("WARNING: This will permanently delete your account, all expenses, and cannot be undone. You will lose all your data forever.")
             }
             .alert("Error", isPresented: $showingErrorAlert) {
                 Button("OK", role: .cancel) {
@@ -193,6 +199,34 @@ struct SettingsView: View {
             }
         }
         .padding(.vertical, 2)
+    }
+    
+    private var appearanceContent: some View {
+        HStack(spacing: 12) {
+            Image(systemName: "moon.fill")
+                .foregroundColor(.purple)
+                .font(.title3)
+                .frame(width: 24, height: 24)
+            
+            VStack(alignment: .leading, spacing: 2) {
+                Text("Dark Mode")
+                    .font(.subheadline)
+                    .fontWeight(.medium)
+                    .foregroundColor(.primary)
+                
+                Text("Switch between light and dark themes")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.8)
+            }
+            
+            Spacer()
+            
+            Toggle("", isOn: $darkModeManager.isDarkMode)
+                .labelsHidden()
+        }
+        .padding(.vertical, 4)
     }
 }
 

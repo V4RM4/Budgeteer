@@ -10,6 +10,7 @@ import Firebase
 
 @main
 struct BudgeteerApp: App {
+    @StateObject private var darkModeManager = DarkModeManager.shared
     
     init() {
         FirebaseApp.configure()
@@ -18,6 +19,7 @@ struct BudgeteerApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .preferredColorScheme(darkModeManager.isDarkMode ? .dark : .light)
         }
     }
 }

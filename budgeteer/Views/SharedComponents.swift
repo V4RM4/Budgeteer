@@ -11,7 +11,6 @@ import CoreLocation
 
 // MARK: - Location Manager
 
-/// A location manager for requesting user's current location with authorization handling.
 @MainActor
 class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     private let locationManager = CLLocationManager()
@@ -108,7 +107,7 @@ class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
 
 // MARK: - Image Picker
 
-/// A SwiftUI wrapper for UIImagePickerController to handle photo selection.
+// SwiftUI wrapper for UIImagePickerController to handle photo selection.
 struct ImagePicker: UIViewControllerRepresentable {
     @Binding var selectedImage: UIImage?
     var sourceType: UIImagePickerController.SourceType
@@ -181,23 +180,3 @@ extension DateFormatter {
         return formatter
     }()
 }
-
-/// A custom text field style with rounded corners and consistent styling.
-struct CustomTextFieldStyle: TextFieldStyle {
-    var hasTrailingButton: Bool = false
-    
-    func _body(configuration: TextField<Self._Label>) -> some View {
-        configuration
-            .padding(.horizontal, 16)
-            .padding(.vertical, 16)
-            .background(Color(.systemBackground))
-            .cornerRadius(12)
-            .overlay(
-                RoundedRectangle(cornerRadius: 12)
-                    .stroke(Color(.systemGray4), lineWidth: 1)
-            )
-            .padding(.trailing, hasTrailingButton ? -40 : 0)
-    }
-}
-
-// Other shared UI components can be added here in the future

@@ -6,13 +6,14 @@
 //
 
 import SwiftUI
+import FirebaseAuth
 #if canImport(Charts)
 import Charts
 #endif
 
-/// The main dashboard view displaying expense summaries, budgets, and charts.
+// The main dashboard view displaying expense summaries, budgets, and charts.
 struct DashboardView: View {
-    @StateObject private var firebaseService = FirebaseService.shared
+    @ObservedObject private var firebaseService = FirebaseService.shared
     @State private var showingAddExpense = false
     @State private var selectedMonth = Date()
     
@@ -21,17 +22,11 @@ struct DashboardView: View {
             ScrollView {
                 VStack(spacing: 24) {
                     welcomeHeader
-                    
                     monthSelector
-                    
                     budgetOverviewCard
-                    
                     spendingChartCard
-                    
                     spendingTrendsCard
-                    
                     recentExpensesCard
-                    
                     Spacer(minLength: 100) // Space for floating button
                 }
                 .padding()
@@ -61,6 +56,12 @@ struct DashboardView: View {
             )
             .sheet(isPresented: $showingAddExpense) {
                 AddExpenseView()
+            }
+        }
+        .onAppear {
+            // If user is nil, reload from Firestore using current Auth user
+            if firebaseService.user == nil, let currentUser = Auth.auth().currentUser {
+                firebaseService.loadUser(userId: currentUser.uid)
             }
         }
     }
@@ -186,15 +187,37 @@ struct DashboardView: View {
                     
                     Spacer()
                     
-                    Text("\(Int(progress * 100))%")
+                    Text("\(Int((totalSpent / budget) * 100))%")
                         .font(.title3)
                         .fontWeight(.semibold)
-                        .foregroundColor(progress > 0.8 ? .red : .blue)
+                        .foregroundColor(progress > 1.0 ? .red : .blue)
                 }
                 
-                ProgressView(value: progress)
-                    .progressViewStyle(CustomProgressViewStyle(color: progress > 0.8 ? .red : .blue))
-                    .scaleEffect(x: 1, y: 2.5, anchor: .center)
+                // Progress Bar
+                GeometryReader { geometry in
+                    ZStack(alignment: .leading) {
+                        // Background track
+                        RoundedRectangle(cornerRadius: 6)
+                            .fill(Color.gray.opacity(0.15))
+                            .frame(height: 12)
+                        
+                        // Progress fill
+                        RoundedRectangle(cornerRadius: 6)
+                            .fill(
+                                LinearGradient(
+                                    gradient: Gradient(colors: [
+                                        progress > 1.0 ? .red : .blue,
+                                        progress > 1.0 ? .red.opacity(0.8) : .blue.opacity(0.8)
+                                    ]),
+                                    startPoint: .leading,
+                                    endPoint: .trailing
+                                )
+                            )
+                            .frame(width: min(progress, 1.0) * geometry.size.width, height: 12)
+                            .animation(.easeInOut(duration: 0.3), value: progress)
+                    }
+                }
+                .frame(height: 12)
                 
                 HStack {
                     VStack(alignment: .leading, spacing: 4) {
@@ -597,30 +620,7 @@ struct DashboardView: View {
     }
 }
 
-struct CustomProgressViewStyle: ProgressViewStyle {
-    let color: Color
-    
-    func makeBody(configuration: Configuration) -> some View {
-        let maxWidth = UIScreen.main.bounds.width * 0.75
-        let progress = configuration.fractionCompleted ?? 0
-        let clampedProgress = min(progress, 1.0) // Cap at 100% visual width
-        
-        ZStack(alignment: .leading) {
-            RoundedRectangle(cornerRadius: 10)
-                .fill(Color.gray.opacity(0.15))
-                .frame(height: 12)
-            
-            RoundedRectangle(cornerRadius: 10)
-                .fill(LinearGradient(
-                    gradient: Gradient(colors: [color, color.opacity(0.8)]),
-                    startPoint: .leading,
-                    endPoint: .trailing
-                ))
-                .frame(width: clampedProgress * maxWidth, height: 12)
-                .shadow(color: color.opacity(0.3), radius: 2, x: 0, y: 1)
-        }
-    }
-}
+
 
 struct ExpenseRowView: View {
     let expense: Expense

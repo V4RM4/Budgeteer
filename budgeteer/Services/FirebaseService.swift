@@ -33,15 +33,9 @@ class FirebaseService: ObservableObject {
     init() {
         authListener = Auth.auth().addStateDidChangeListener { [weak self] _, user in
             if let user = user {
-                self?.isAuthenticated = true
+                // Don't set isAuthenticated = true immediately
+                // Wait for user document validation first
                 self?.loadUser(userId: user.uid)
-                // Also try to load expenses directly in case user data loading fails
-                Task {
-                    try? await Task.sleep(for: .seconds(1))
-                    if self?.expenses.isEmpty == true {
-                        self?.loadExpensesDirectly(userId: user.uid)
-                    }
-                }
             } else {
                 self?.isAuthenticated = false
                 self?.user = nil
@@ -69,10 +63,23 @@ class FirebaseService: ObservableObject {
         do {
             let authResult = try await Auth.auth().createUser(withEmail: email, password: password)
             let newUser = AppUser(id: authResult.user.uid, email: email, username: username, monthlyBudget: monthlyBudget, createdAt: Date())
-            try await saveUser(newUser)
-            await MainActor.run {
-                self.user = newUser
-                self.isLoading = false
+            
+            // Try to save user document to Firestore
+            do {
+                try await saveUser(newUser)
+                await MainActor.run {
+                    self.user = newUser
+                    self.isAuthenticated = true
+                    self.isLoading = false
+                }
+            } catch {
+                // If Firestore save fails, delete the auth user to prevent orphaned accounts
+                try? await authResult.user.delete()
+                await MainActor.run {
+                    let errorMessage = self.getUserFriendlyErrorMessage(error)
+                    self.errorMessage = "Failed to create account: \(errorMessage)"
+                    self.isLoading = false
+                }
             }
         } catch {
             await MainActor.run {
@@ -91,9 +98,25 @@ class FirebaseService: ObservableObject {
         }
         
         do {
-            try await Auth.auth().signIn(withEmail: email, password: password)
-            await MainActor.run {
-                self.isLoading = false
+            let authResult = try await Auth.auth().signIn(withEmail: email, password: password)
+            
+            // Verify that user document exists in Firestore
+            let userDoc = try await db.collection("users").document(authResult.user.uid).getDocument()
+            
+            if let data = userDoc.data(), let user = AppUser.fromDictionary(data) {
+                await MainActor.run {
+                    self.user = user
+                    self.isAuthenticated = true
+                    self.isLoading = false
+                }
+                self.loadExpenses()
+            } else {
+                // User document doesn't exist - sign them out
+                try Auth.auth().signOut()
+                await MainActor.run {
+                    self.errorMessage = "Account data not found. Please contact support or create a new account."
+                    self.isLoading = false
+                }
             }
         } catch {
             await MainActor.run {
@@ -169,17 +192,46 @@ class FirebaseService: ObservableObject {
         try await db.collection("users").document(user.id).setData(user.toDictionary())
     }
     
-    private func loadUser(userId: String) {
+    func loadUser(userId: String) {
         db.collection("users").document(userId).getDocument { [weak self] snapshot, error in
-            if let error = error {
-                // Only log internal errors, don't show to user
-                print("Firebase Error (internal): \(error.localizedDescription)")
-                return
+            Task { @MainActor in
+                if let error = error {
+                    // Only log internal errors, don't show to user
+                    print("Firebase Error (internal): \(error.localizedDescription)")
+                    // Sign out user if there's an error loading their data
+                    self?.signOutDueToDataError()
+                    return
+                }
+                
+                if let data = snapshot?.data(), let user = AppUser.fromDictionary(data) {
+                    // Only set authenticated to true when user document is successfully loaded
+                    self?.user = user
+                    self?.isAuthenticated = true
+                    self?.loadExpenses()
+                } else {
+                    // User document doesn't exist in Firestore - sign them out
+                    print("User document not found in Firestore for uid: \(userId)")
+                    self?.signOutDueToDataError()
+                }
             }
-            
-            if let data = snapshot?.data(), let user = AppUser.fromDictionary(data) {
-                self?.user = user
-                self?.loadExpenses()
+        }
+    }
+    
+    private func signOutDueToDataError() {
+        Task { @MainActor in
+            self.errorMessage = "Account data not found. Please contact support or create a new account."
+            self.isAuthenticated = false
+            self.user = nil
+            self.expenses = []
+            self.expenseListener?.remove()
+        }
+        
+        // Sign out from Firebase Auth
+        Task {
+            do {
+                try Auth.auth().signOut()
+            } catch {
+                print("Error signing out: \(error.localizedDescription)")
             }
         }
     }
