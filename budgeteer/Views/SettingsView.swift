@@ -9,6 +9,7 @@ import SwiftUI
 
 struct SettingsView: View {
     @StateObject private var firebaseService = FirebaseService.shared
+    @StateObject private var darkModeManager = DarkModeManager.shared
     @State private var showingBudgetEditor = false
     @State private var showingSignOutAlert = false
     @State private var showingDeleteAccountAlert = false
@@ -25,6 +26,13 @@ struct SettingsView: View {
                     budgetContent
                 } header: {
                     Text("Budget")
+                }
+                
+                // Appearance Section
+                Section {
+                    appearanceContent
+                } header: {
+                    Text("Appearance")
                 }
                 
                 // Account Actions Section
@@ -191,6 +199,32 @@ struct SettingsView: View {
             }
         }
         .padding(.vertical, 2)
+    }
+    
+    private var appearanceContent: some View {
+        HStack(spacing: 12) {
+            Image(systemName: "moon.fill")
+                .foregroundColor(.purple)
+                .font(.title3)
+                .frame(width: 24, height: 24)
+            
+            VStack(alignment: .leading, spacing: 2) {
+                Text("Dark Mode")
+                    .font(.subheadline)
+                    .fontWeight(.medium)
+                    .foregroundColor(.primary)
+                
+                Text("Switch between light and dark themes")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+            }
+            
+            Spacer()
+            
+            Toggle("", isOn: $darkModeManager.isDarkMode)
+                .labelsHidden()
+        }
+        .padding(.vertical, 4)
     }
 }
 
