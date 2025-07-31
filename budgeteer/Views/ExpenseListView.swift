@@ -44,6 +44,9 @@ struct ExpenseListView: View {
             expenses = expenses.filter { $0.category == selectedCategory }
         }
         
+        // Sort by date in descending order (most recent first)
+        expenses = expenses.sorted { $0.expenseDate > $1.expenseDate }
+        
         return expenses
     }
     
@@ -186,9 +189,19 @@ struct ExpenseListView: View {
     
     private var expensesList: some View {
         List {
-            ForEach(groupedExpenses.keys.sorted(by: >), id: \.self) { dateKey in
+            // Get unique dates and sort them chronologically in descending order
+            let sortedDateKeys = Array(Set(filteredExpenses.map { 
+                DateFormatter.sectionDate.string(from: $0.expenseDate) 
+            })).sorted { dateKey1, dateKey2 in
+                // Convert date strings back to dates for proper chronological comparison
+                let date1 = DateFormatter.sectionDate.date(from: dateKey1) ?? Date.distantPast
+                let date2 = DateFormatter.sectionDate.date(from: dateKey2) ?? Date.distantPast
+                return date1 > date2 // Most recent first
+            }
+            
+            ForEach(sortedDateKeys, id: \.self) { dateKey in
                 Section(dateKey) {
-                    ForEach(groupedExpenses[dateKey] ?? []) { expense in
+                    ForEach((groupedExpenses[dateKey] ?? []).sorted { $0.expenseDate > $1.expenseDate }) { expense in
                         ExpenseListRowView(expense: expense)
                             .contentShape(Rectangle())
                             .onTapGesture {
