@@ -142,17 +142,13 @@ struct SettingsView: View {
         HStack(spacing: 16) {
             // Profile Avatar
             Circle()
-                .fill(LinearGradient(
-                    gradient: Gradient(colors: [.blue, .purple]),
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
-                ))
+                .fill(Color(.systemGray5))
                 .frame(width: 60, height: 60)
                 .overlay(
                     Text(firebaseService.user?.username.prefix(1).uppercased() ?? "U")
                         .font(.title2)
-                        .fontWeight(.bold)
-                        .foregroundColor(.white)
+                        .fontWeight(.medium)
+                        .foregroundColor(.primary)
                 )
             
             VStack(alignment: .leading, spacing: 4) {
@@ -184,7 +180,7 @@ struct SettingsView: View {
                 Text("$\(Int(firebaseService.user?.monthlyBudget ?? 0))")
                     .font(.title2)
                     .fontWeight(.semibold)
-                    .foregroundColor(.primary)
+                    .foregroundColor(.green)
             }
             
             Spacer()
