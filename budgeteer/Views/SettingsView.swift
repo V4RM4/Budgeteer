@@ -29,13 +29,6 @@ struct SettingsView: View {
                     Text("Budget")
                 }
                 
-                // Statistics Section
-                Section {
-                    statisticsContent
-                } header: {
-                    Text("Statistics")
-                }
-                
                 // Account Actions Section
                 Section {
                     // Sign Out Button
@@ -182,74 +175,28 @@ struct SettingsView: View {
     }
     
     private var budgetContent: some View {
-        HStack {
-            Image(systemName: "dollarsign.circle.fill")
-                .foregroundColor(.green)
-                .font(.title2)
-            
+        HStack(spacing: 12) {
             VStack(alignment: .leading, spacing: 2) {
                 Text("Monthly Budget")
                     .font(.subheadline)
-                    .fontWeight(.medium)
+                    .foregroundColor(.secondary)
                 
                 Text("$\(Int(firebaseService.user?.monthlyBudget ?? 0))")
-                    .font(.title3)
+                    .font(.title2)
                     .fontWeight(.semibold)
-                    .foregroundColor(.green)
+                    .foregroundColor(.primary)
             }
             
             Spacer()
             
-            Button("Edit") {
-                showingBudgetEditor = true
+            Button(action: { showingBudgetEditor = true }) {
+                Image(systemName: "chevron.right")
+                    .font(.caption)
+                    .fontWeight(.semibold)
+                    .foregroundColor(.secondary)
             }
-            .font(.subheadline)
-            .foregroundColor(.blue)
         }
-        .padding(.vertical, 4)
-    }
-    
-    private var statisticsContent: some View {
-        VStack(spacing: 0) {
-            StatisticRowView(
-                icon: "calendar.circle",
-                title: "Total Expenses",
-                value: "\(firebaseService.expenses.count)",
-                color: .blue
-            )
-            
-            StatisticRowView(
-                icon: "dollarsign.circle.fill",
-                title: "Total Spent",
-                value: "$\(String(format: "%.2f", firebaseService.expenses.reduce(0) { $0 + $1.amount }))",
-                color: .orange
-            )
-            
-            StatisticRowView(
-                icon: "chart.bar.fill",
-                title: "This Month",
-                value: "$\(String(format: "%.2f", firebaseService.totalSpentThisMonth()))",
-                color: .purple
-            )
-            
-            StatisticRowView(
-                icon: "star.circle.fill",
-                title: "Average per Day",
-                value: "$\(String(format: "%.2f", averagePerDay()))",
-                color: .pink
-            )
-        }
-    }
-    
-    private func averagePerDay() -> Double {
-        let expenses = firebaseService.expenses
-        guard !expenses.isEmpty else { return 0 }
-        
-        let totalAmount = expenses.reduce(0) { $0 + $1.amount }
-        let oldestDate = expenses.map(\.createdAt).min() ?? Date()
-        let daysSinceStart = max(1, Calendar.current.dateComponents([.day], from: oldestDate, to: Date()).day ?? 1)
-        
-        return totalAmount / Double(daysSinceStart)
+        .padding(.vertical, 2)
     }
 }
 
@@ -330,9 +277,8 @@ struct BudgetEditorView: View {
             VStack(spacing: 24) {
                 // Header
                 VStack(spacing: 16) {
-                    Image(systemName: "dollarsign.circle.fill")
+                    Image(systemName: "dollarsign.circle")
                         .font(.system(size: 60))
-                        .foregroundColor(.green)
                     
                     Text("Set Monthly Budget")
                         .font(.title2)
@@ -368,25 +314,25 @@ struct BudgetEditorView: View {
                     .background(Color(.systemGray6))
                     .clipShape(RoundedRectangle(cornerRadius: 12))
                     
-                    // Suggestions
-                    VStack(spacing: 8) {
+                    // Quick Suggestions
+                    VStack(spacing: 12) {
                         Text("Quick Suggestions")
                             .font(.subheadline)
                             .fontWeight(.medium)
                             .foregroundColor(.secondary)
                         
-                        HStack(spacing: 12) {
+                        LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 8), count: 4), spacing: 8) {
                             ForEach([500, 1000, 2000, 5000], id: \.self) { amount in
                                 Button("$\(amount)") {
                                     budgetText = "\(amount)"
                                 }
-                                .font(.subheadline)
+                                .font(.system(.subheadline, design: .rounded))
                                 .fontWeight(.medium)
                                 .foregroundColor(.blue)
-                                .padding(.horizontal, 16)
-                                .padding(.vertical, 8)
+                                .frame(height: 36)
+                                .frame(maxWidth: .infinity)
                                 .background(Color.blue.opacity(0.1))
-                                .clipShape(Capsule())
+                                .clipShape(RoundedRectangle(cornerRadius: 8))
                             }
                         }
                     }
@@ -406,7 +352,6 @@ struct BudgetEditorView: View {
                                 .scaleEffect(0.9)
                                 .tint(.white)
                         } else {
-                            Image(systemName: "checkmark.circle.fill")
                             Text("Save Budget")
                                 .fontWeight(.semibold)
                         }
@@ -431,7 +376,13 @@ struct BudgetEditorView: View {
                 }
             }
             .onAppear {
-                budgetText = "\(firebaseService.user?.monthlyBudget ?? 1000)"
+                let budget = firebaseService.user?.monthlyBudget ?? 1000
+                // Format without decimal if it's a whole number
+                if budget.truncatingRemainder(dividingBy: 1) == 0 {
+                    budgetText = "\(Int(budget))"
+                } else {
+                    budgetText = "\(budget)"
+                }
             }
         }
     }
