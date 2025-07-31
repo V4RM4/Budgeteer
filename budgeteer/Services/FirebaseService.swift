@@ -390,6 +390,24 @@ class FirebaseService: ObservableObject {
         return Array(monthlyExpenses.prefix(limit))
     }
     
+    func dailySpendingForMonth(_ selectedMonth: Date) -> [Date: Double] {
+        let calendar = Calendar.current
+        
+        let monthlyExpenses = expenses.filter { 
+            calendar.isDate($0.expenseDate, equalTo: selectedMonth, toGranularity: .month)
+        }
+        
+        var dailySpending: [Date: Double] = [:]
+        
+        for expense in monthlyExpenses {
+            // Get the start of the day for the expense date
+            let dayStart = calendar.startOfDay(for: expense.expenseDate)
+            dailySpending[dayStart, default: 0] += expense.amount
+        }
+        
+        return dailySpending
+    }
+    
     // MARK: - Helper Methods
     
     private func getUserFriendlyErrorMessage(_ error: Error) -> String {
