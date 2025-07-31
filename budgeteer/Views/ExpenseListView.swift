@@ -56,13 +56,10 @@ struct ExpenseListView: View {
     var body: some View {
         NavigationStack {
             VStack(spacing: 0) {
-                // Month Selector
                 monthSelector
                 
-                // Search and Filter Bar
                 searchAndFilterBar
                 
-                // Expenses List
                 if filteredExpenses.isEmpty {
                     emptyStateView
                 } else {
@@ -71,7 +68,7 @@ struct ExpenseListView: View {
             }
             .background(Color(.systemGroupedBackground))
             .navigationTitle("Expenses")
-            .navigationBarTitleDisplayMode(.large)
+            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button(action: { showingAddExpense = true }) {
@@ -105,14 +102,6 @@ struct ExpenseListView: View {
     private var monthSelector: some View {
         VStack(spacing: 8) {
             HStack {
-                Text("Viewing expenses for")
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
-                
-                Spacer()
-            }
-            
-            HStack {
                 Button(action: {
                     withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
                         selectedMonth = Calendar.current.date(byAdding: .month, value: -1, to: selectedMonth) ?? selectedMonth
@@ -144,7 +133,8 @@ struct ExpenseListView: View {
             }
             .padding(.horizontal)
         }
-        .padding()
+        .padding(.horizontal)
+        .padding(.vertical, 12)
         .background(Color(.systemBackground))
         .overlay(
             Rectangle()

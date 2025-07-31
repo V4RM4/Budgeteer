@@ -47,48 +47,56 @@ class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         }
     }
     
-    func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+    nonisolated func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         guard let location = locations.first else { return }
         
         let geocoder = CLGeocoder()
         geocoder.reverseGeocodeLocation(location) { [weak self] placemarks, error in
-            self?.isLoading = false
-            
-            if let placemark = placemarks?.first {
-                var components: [String] = []
+            Task { @MainActor in
+                self?.isLoading = false
                 
-                if let name = placemark.name {
-                    components.append(name)
+                if let placemark = placemarks?.first {
+                    var components: [String] = []
+                    
+                    if let name = placemark.name {
+                        components.append(name)
+                    }
+                    if let locality = placemark.locality {
+                        components.append(locality)
+                    }
+                    if let state = placemark.administrativeArea {
+                        components.append(state)
+                    }
+                    
+                    let locationString = components.joined(separator: ", ")
+                    print("Location found: \(locationString)")
+                    self?.locationString = locationString
                 }
-                if let locality = placemark.locality {
-                    components.append(locality)
-                }
-                if let state = placemark.administrativeArea {
-                    components.append(state)
-                }
-                
-                let locationString = components.joined(separator: ", ")
-                print("Location found: \(locationString)")
-                self?.locationString = locationString
             }
         }
     }
     
-    func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
-        self.isLoading = false
-        print("Location failed: \(error.localizedDescription)")
+    nonisolated func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
+        Task { @MainActor in
+            self.isLoading = false
+            print("Location failed: \(error.localizedDescription)")
+        }
     }
     
-    func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
+    nonisolated func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
         print("Location authorization changed to: \(manager.authorizationStatus.rawValue)")
         
         switch manager.authorizationStatus {
         case .authorizedWhenInUse, .authorizedAlways:
             // Directly request location - any location service issues will be handled in error callback
-            isLoading = true
-            locationManager.requestLocation()
+            Task { @MainActor in
+                isLoading = true
+                locationManager.requestLocation()
+            }
         case .denied, .restricted:
-            self.isLoading = false
+            Task { @MainActor in
+                self.isLoading = false
+            }
             print("Location access denied or restricted")
         case .notDetermined:
             print("Location authorization not determined")
