@@ -260,21 +260,54 @@ class FirebaseService: ObservableObject {
         
         let storageRef = storage.reference().child("expense_photos/\(expenseId).jpg")
         
-        do {
-            print("📸 Starting photo upload for expense: \(expenseId)")
+        return await withCheckedContinuation { continuation in
+            print("Starting photo upload for expense: \(expenseId)")
             let metadata = StorageMetadata()
             metadata.contentType = "image/jpeg"
             
-            _ = try await storageRef.putData(imageData, metadata: metadata)
-            let downloadURL = try await storageRef.downloadURL()
-            print("✅ Photo upload successful: \(downloadURL.absoluteString)")
-            return downloadURL.absoluteString
-        } catch {
-            await MainActor.run {
-                self.errorMessage = "Failed to upload photo: \(error.localizedDescription)"
+            _ = storageRef.putData(imageData, metadata: metadata) { metadata, error in
+                if let error = error {
+                    Task { @MainActor in
+                        self.errorMessage = "Failed to upload photo: \(error.localizedDescription)"
+                    }
+                    print("Photo upload failed: \(error.localizedDescription)")
+                    continuation.resume(returning: nil)
+                    return
+                }
+                
+                guard metadata != nil else {
+                    Task { @MainActor in
+                        self.errorMessage = "Failed to upload photo: No metadata received"
+                    }
+                    print("Photo upload failed: No metadata received")
+                    continuation.resume(returning: nil)
+                    return
+                }
+                
+                // Get download URL
+                storageRef.downloadURL { url, error in
+                    if let error = error {
+                        Task { @MainActor in
+                            self.errorMessage = "Failed to get download URL: \(error.localizedDescription)"
+                        }
+                        print("Failed to get download URL: \(error.localizedDescription)")
+                        continuation.resume(returning: nil)
+                        return
+                    }
+                    
+                    guard let downloadURL = url else {
+                        Task { @MainActor in
+                            self.errorMessage = "Failed to get download URL: No URL received"
+                        }
+                        print("Failed to get download URL: No URL received")
+                        continuation.resume(returning: nil)
+                        return
+                    }
+                    
+                    print("Photo upload successful: \(downloadURL.absoluteString)")
+                    continuation.resume(returning: downloadURL.absoluteString)
+                }
             }
-            print("❌ Photo upload failed: \(error.localizedDescription)")
-            return nil
         }
     }
     

@@ -7,6 +7,7 @@
 
 import SwiftUI
 
+/// A view that provides user authentication functionality with email and password.
 struct LoginView: View {
     @StateObject private var firebaseService = FirebaseService.shared
     @State private var email = ""
@@ -15,10 +16,14 @@ struct LoginView: View {
     @State private var isPasswordVisible = false
     @State private var localErrorMessage: String?
     
+    /// Validates if the form input is complete and valid.
     private var isFormValid: Bool {
         !email.isEmpty && !password.isEmpty && isValidEmail(email)
     }
     
+    /// Validates email format using a regular expression.
+    /// - Parameter email: The email string to validate.
+    /// - Returns: True if the email format is valid, false otherwise.
     private func isValidEmail(_ email: String) -> Bool {
         let emailRegEx = "[A-Z0-9a-z._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,64}"
         let emailPred = NSPredicate(format:"SELF MATCHES %@", emailRegEx)
@@ -46,7 +51,7 @@ struct LoginView: View {
                                 .frame(width: 120, height: 120)
                                 .shadow(color: .blue.opacity(0.3), radius: 20, x: 0, y: 10)
                             
-                            Image(systemName: "chart.line.uptrend.xyaxis")
+                            Image(systemName: "chart.bar.xaxis")
                                 .font(.system(size: 50, weight: .medium))
                                 .foregroundColor(.white)
                         }

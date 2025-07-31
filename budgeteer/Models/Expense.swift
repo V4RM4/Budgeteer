@@ -8,18 +8,41 @@
 import Foundation
 import FirebaseFirestore
 
+/// A model representing a user's expense with all necessary details for tracking and categorization.
 struct Expense: Codable, Identifiable {
+    /// Unique identifier for the expense
     let id: String
+    /// The user ID this expense belongs to
     let userId: String
+    /// The name/title of the expense
     var name: String
+    /// The monetary amount of the expense
     var amount: Double
+    /// The category this expense belongs to
     var category: ExpenseCategory
+    /// When this expense record was created
     let createdAt: Date
+    /// The actual date when the expense occurred
     var expenseDate: Date
+    /// Optional description providing additional details
     var description: String?
+    /// Optional URL to the receipt photo
     var photoURL: String?
+    /// Optional location where the expense occurred
     var location: String?
     
+    /// Creates a new expense with the specified parameters.
+    /// - Parameters:
+    ///   - id: Unique identifier for the expense. Defaults to a new UUID string.
+    ///   - userId: The ID of the user this expense belongs to.
+    ///   - name: The name or title of the expense.
+    ///   - amount: The monetary amount of the expense.
+    ///   - category: The category this expense belongs to.
+    ///   - expenseDate: The date when the expense occurred. Defaults to current date.
+    ///   - description: Optional description providing additional details.
+    ///   - photoURL: Optional URL to the receipt photo.
+    ///   - location: Optional location where the expense occurred.
+    ///   - createdAt: When this expense record was created. Defaults to current date.
     init(id: String = UUID().uuidString, userId: String, name: String, amount: Double, category: ExpenseCategory, expenseDate: Date = Date(), description: String? = nil, photoURL: String? = nil, location: String? = nil, createdAt: Date = Date()) {
         self.id = id
         self.userId = userId
@@ -34,6 +57,7 @@ struct Expense: Codable, Identifiable {
     }
 }
 
+/// Enumeration representing different categories of expenses with associated icons and colors.
 enum ExpenseCategory: String, CaseIterable, Codable {
     case food = "Food & Dining"
     case transportation = "Transportation"
@@ -44,19 +68,21 @@ enum ExpenseCategory: String, CaseIterable, Codable {
     case travel = "Travel"
     case other = "Other"
     
+    /// Returns the SF Symbol name appropriate for this category.
     var icon: String {
         switch self {
-        case .food: return "fork.knife"
-        case .transportation: return "car.fill"
-        case .shopping: return "bag.fill"
-        case .entertainment: return "tv.fill"
-        case .bills: return "bolt.fill"
-        case .healthcare: return "cross.case.fill"
-        case .travel: return "airplane"
+        case .food: return "fork.knife.circle.fill"
+        case .transportation: return "car.circle.fill"
+        case .shopping: return "bag.circle.fill"
+        case .entertainment: return "tv.circle.fill"
+        case .bills: return "bolt.circle.fill"
+        case .healthcare: return "cross.case.circle.fill"
+        case .travel: return "airplane.circle.fill"
         case .other: return "ellipsis.circle.fill"
         }
     }
     
+    /// Returns the color name associated with this category.
     var color: String {
         switch self {
         case .food: return "orange"

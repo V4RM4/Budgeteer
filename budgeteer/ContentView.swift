@@ -7,6 +7,7 @@
 
 import SwiftUI
 
+/// The root view that manages authentication state and displays appropriate content.
 struct ContentView: View {
     @StateObject private var firebaseService = FirebaseService.shared
     
@@ -22,24 +23,25 @@ struct ContentView: View {
     }
 }
 
+/// The main tab view containing the primary app navigation.
 struct MainTabView: View {
     var body: some View {
         TabView {
             DashboardView()
                 .tabItem {
-                    Image(systemName: "chart.pie.fill")
+                    Image(systemName: "chart.bar.fill")
                     Text("Dashboard")
                 }
             
             ExpenseListView()
                 .tabItem {
-                    Image(systemName: "list.bullet")
+                    Image(systemName: "list.bullet.clipboard")
                     Text("Expenses")
                 }
             
             SettingsView()
                 .tabItem {
-                    Image(systemName: "gearshape.fill")
+                    Image(systemName: "gear")
                     Text("Settings")
                 }
         }

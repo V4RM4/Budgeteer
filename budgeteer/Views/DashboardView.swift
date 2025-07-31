@@ -10,6 +10,7 @@ import SwiftUI
 import Charts
 #endif
 
+/// The main dashboard view displaying expense summaries, budgets, and charts.
 struct DashboardView: View {
     @StateObject private var firebaseService = FirebaseService.shared
     @State private var showingAddExpense = false
@@ -210,7 +211,7 @@ struct DashboardView: View {
             
             if categoryData.isEmpty {
                 VStack(spacing: 12) {
-                    Image(systemName: "chart.pie")
+                    Image(systemName: "chart.bar")
                         .font(.system(size: 40))
                         .foregroundColor(.gray)
                     Text("No expenses this month")

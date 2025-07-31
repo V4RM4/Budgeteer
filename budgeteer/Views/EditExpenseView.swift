@@ -264,8 +264,8 @@ struct EditExpenseView: View {
         .background(Color(.systemBackground))
         .clipShape(RoundedRectangle(cornerRadius: 16))
                 .shadow(color: .black.opacity(0.05), radius: 2, x: 0, y: 1)
-        .onChange(of: locationManager.locationString) { newLocation in
-            if let newLocation = newLocation {
+        .onChange(of: locationManager.locationString) {
+            if let newLocation = locationManager.locationString {
                 self.location = newLocation
             }
         }
@@ -411,7 +411,7 @@ struct EditExpenseView: View {
         guard let url = URL(string: urlString) else { return }
         
         URLSession.shared.dataTask(with: url) { data, _, _ in
-            if let data = data, let image = UIImage(data: data) {
+            if let data = data, let _ = UIImage(data: data) {
                 DispatchQueue.main.async {
                     // Don't set selectedPhoto here as it would trigger hasChanges
                     // We'll show the existing photo through the URL instead

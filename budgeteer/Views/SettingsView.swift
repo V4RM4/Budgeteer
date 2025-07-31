@@ -97,7 +97,7 @@ struct SettingsView: View {
                     }
                 } footer: {
                     VStack(alignment: .leading, spacing: 4) {
-                        Text("⚠️ This action cannot be undone")
+                        Text("WARNING: This action cannot be undone")
                             .font(.footnote)
                             .foregroundColor(.red)
                             .fontWeight(.medium)
@@ -212,21 +212,21 @@ struct SettingsView: View {
     private var statisticsContent: some View {
         VStack(spacing: 0) {
             StatisticRowView(
-                icon: "calendar",
+                icon: "calendar.circle",
                 title: "Total Expenses",
                 value: "\(firebaseService.expenses.count)",
                 color: .blue
             )
             
             StatisticRowView(
-                icon: "dollarsign.circle",
+                icon: "dollarsign.circle.fill",
                 title: "Total Spent",
                 value: "$\(String(format: "%.2f", firebaseService.expenses.reduce(0) { $0 + $1.amount }))",
                 color: .orange
             )
             
             StatisticRowView(
-                icon: "chart.pie",
+                icon: "chart.bar.fill",
                 title: "This Month",
                 value: "$\(String(format: "%.2f", firebaseService.totalSpentThisMonth()))",
                 color: .purple

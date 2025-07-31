@@ -9,6 +9,7 @@ import SwiftUI
 import PhotosUI
 import CoreLocation
 
+/// A view for creating new expense entries with comprehensive input options.
 struct AddExpenseView: View {
     @StateObject private var firebaseService = FirebaseService.shared
     @Environment(\.dismiss) private var dismiss
@@ -26,8 +27,9 @@ struct AddExpenseView: View {
     @State private var showingSuccessAlert = false
     @StateObject private var locationManager = LocationManager()
     
-    var isFormValid: Bool {
-        !name.isEmpty && !amount.isEmpty && Double(amount) != nil
+    /// Validates if all required form fields are properly filled.
+    private var isFormValid: Bool {
+        !name.isEmpty && !amount.isEmpty && Double(amount) != nil && Double(amount)! > 0
     }
     
     var body: some View {
@@ -237,8 +239,8 @@ struct AddExpenseView: View {
         .background(Color(.systemBackground))
         .clipShape(RoundedRectangle(cornerRadius: 16))
         .shadow(color: .black.opacity(0.05), radius: 2, x: 0, y: 1)
-        .onChange(of: locationManager.locationString) { newLocation in
-            if let newLocation = newLocation {
+        .onChange(of: locationManager.locationString) {
+            if let newLocation = locationManager.locationString {
                 self.location = newLocation
             }
         }

@@ -7,6 +7,7 @@
 
 import SwiftUI
 
+/// A view displaying a list of user expenses with search, filter, and management capabilities.
 struct ExpenseListView: View {
     @StateObject private var firebaseService = FirebaseService.shared
     @State private var searchText = ""
@@ -158,7 +159,7 @@ struct ExpenseListView: View {
                 
                 // Filter Button
                 Button(action: { showingFilters = true }) {
-                    Image(systemName: selectedCategory != nil ? "line.horizontal.3.decrease.circle.fill" : "line.horizontal.3.decrease.circle")
+                    Image(systemName: selectedCategory != nil ? "line.3.horizontal.decrease.circle.fill" : "line.3.horizontal.decrease.circle")
                         .font(.title2)
                         .foregroundColor(selectedCategory != nil ? .blue : .gray)
                 }
@@ -212,7 +213,7 @@ struct ExpenseListView: View {
         VStack(spacing: 20) {
             Spacer()
             
-            Image(systemName: "tray")
+            Image(systemName: "list.clipboard")
                 .font(.system(size: 60))
                 .foregroundColor(.gray)
             
@@ -276,43 +277,11 @@ struct ExpenseListRowView: View {
                     .font(.body)
                     .fontWeight(.medium)
                 
-                HStack(spacing: 8) {
-                    Text(expense.category.rawValue)
-                        .font(.caption)
-                        .padding(.horizontal, 8)
-                        .padding(.vertical, 2)
-                        .background(getCategoryColor().opacity(0.1))
-                        .foregroundColor(getCategoryColor())
-                        .clipShape(Capsule())
-                    
-                    if let description = expense.description, !description.isEmpty {
-                        Text("•")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                        
-                        Text(description)
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                            .lineLimit(1)
-                    }
-                    
-                    if expense.photoURL != nil {
-                        Text("•")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                        
-                        Image(systemName: "camera.fill")
-                            .font(.caption)
-                            .foregroundColor(.blue)
-                    }
-                    
-                    if let location = expense.location, !location.isEmpty {
-                        Text("•")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                        
+                // Location (if available)
+                if let location = expense.location, !location.isEmpty {
+                    HStack(spacing: 4) {
                         Image(systemName: "location.fill")
-                            .font(.caption)
+                            .font(.caption2)
                             .foregroundColor(.green)
                         
                         Text(location)
@@ -320,6 +289,45 @@ struct ExpenseListRowView: View {
                             .foregroundColor(.secondary)
                             .lineLimit(1)
                     }
+                }
+                
+                HStack(spacing: 8) {
+                    // Category tag with capsule styling
+                    Text(expense.category.rawValue)
+                        .font(.caption)
+                        .fontWeight(.medium)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 4)
+                        .background(getCategoryColor().opacity(0.15))
+                        .foregroundColor(getCategoryColor())
+                        .clipShape(Capsule())
+                    
+                    // Description indicator
+                    if let description = expense.description, !description.isEmpty {
+                        HStack(spacing: 3) {
+                            Image(systemName: "text.bubble.fill")
+                                .font(.caption2)
+                                .foregroundColor(.secondary)
+                            
+                            Text(description)
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                                .lineLimit(1)
+                        }
+                    }
+                    
+                    // Photo indicator
+                    if expense.photoURL != nil {
+                        Image(systemName: "camera.fill")
+                            .font(.caption)
+                            .foregroundColor(.blue.opacity(0.8))
+                            .padding(.horizontal, 6)
+                            .padding(.vertical, 2)
+                            .background(Color.blue.opacity(0.1))
+                            .clipShape(RoundedRectangle(cornerRadius: 4))
+                    }
+                    
+                    Spacer()
                 }
             }
             
@@ -361,7 +369,7 @@ struct FilterView: View {
             VStack(spacing: 20) {
                 // Header
                 VStack(spacing: 8) {
-                    Image(systemName: "line.horizontal.3.decrease.circle.fill")
+                    Image(systemName: "line.3.horizontal.decrease.circle.fill")
                         .font(.system(size: 40))
                         .foregroundColor(.blue)
                     

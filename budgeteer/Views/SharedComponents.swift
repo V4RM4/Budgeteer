@@ -11,6 +11,7 @@ import CoreLocation
 
 // MARK: - Location Manager
 
+// A location manager for requesting user's current location with authorization handling.
 class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     private let locationManager = CLLocationManager()
     @Published var locationString: String? = nil
@@ -22,24 +23,26 @@ class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         locationManager.desiredAccuracy = kCLLocationAccuracyBest
     }
     
+    // Requests location permission and current location.
     func requestLocation() {
-        guard CLLocationManager.locationServicesEnabled() else { 
-            print("📍 Location services not enabled")
-            return 
-        }
-        
+        // Check authorization status first
         let status = locationManager.authorizationStatus
-        print("📍 Location authorization status: \(status.rawValue)")
+        print("Location authorization status: \(status.rawValue)")
         
-        if status == .notDetermined {
-            print("📍 Requesting location authorization")
+        // Only check if location services are enabled after we have proper authorization
+        switch status {
+        case .notDetermined:
+            print("Requesting location authorization")
             locationManager.requestWhenInUseAuthorization()
-        } else if status == .authorizedWhenInUse || status == .authorizedAlways {
-            print("📍 Starting location request")
+        case .authorizedWhenInUse, .authorizedAlways:
+            // Directly request location - any location service issues will be handled in error callback
+            print("Starting location request")
             isLoading = true
             locationManager.requestLocation()
-        } else {
-            print("📍 Location not authorized: \(status)")
+        case .denied, .restricted:
+            print("Location not authorized: \(status)")
+        @unknown default:
+            print("Unknown location authorization status: \(status)")
         }
     }
     
@@ -65,7 +68,7 @@ class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
                     }
                     
                     let locationString = components.joined(separator: ", ")
-                    print("📍 Location found: \(locationString)")
+                    print("Location found: \(locationString)")
                     self?.locationString = locationString
                 }
             }
@@ -75,19 +78,34 @@ class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
         DispatchQueue.main.async {
             self.isLoading = false
-            print("📍 Location failed: \(error.localizedDescription)")
+            print("Location failed: \(error.localizedDescription)")
         }
     }
     
     func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
-        if manager.authorizationStatus == .authorizedWhenInUse || manager.authorizationStatus == .authorizedAlways {
-            requestLocation()
+        print("Location authorization changed to: \(manager.authorizationStatus.rawValue)")
+        
+        switch manager.authorizationStatus {
+        case .authorizedWhenInUse, .authorizedAlways:
+            // Directly request location - any location service issues will be handled in error callback
+            isLoading = true
+            locationManager.requestLocation()
+        case .denied, .restricted:
+            DispatchQueue.main.async {
+                self.isLoading = false
+            }
+            print("Location access denied or restricted")
+        case .notDetermined:
+            print("Location authorization not determined")
+        @unknown default:
+            print("Unknown location authorization status")
         }
     }
 }
 
 // MARK: - Image Picker
 
+/// A SwiftUI wrapper for UIImagePickerController to handle photo selection.
 struct ImagePicker: UIViewControllerRepresentable {
     @Binding var selectedImage: UIImage?
     var sourceType: UIImagePickerController.SourceType
@@ -136,6 +154,7 @@ extension DateFormatter {
     }()
 }
 
+/// A custom text field style with rounded corners and consistent styling.
 struct CustomTextFieldStyle: TextFieldStyle {
     var hasTrailingButton: Bool = false
     
