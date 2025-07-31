@@ -25,10 +25,7 @@ struct BudgeteerApp: App {
         
         GIDSignIn.sharedInstance.configuration = GIDConfiguration(clientID: clientId)
         
-        // Run Google Sign-In tests in debug mode
-        #if DEBUG
-        GoogleSignInTest.runAllTests()
-        #endif
+
     }
     
     var body: some Scene {
@@ -37,6 +34,9 @@ struct BudgeteerApp: App {
                 .preferredColorScheme(darkModeManager.isDarkMode ? .dark : .light)
                 .onOpenURL { url in
                     GIDSignIn.sharedInstance.handle(url)
+                }
+                .onReceive(NotificationCenter.default.publisher(for: Notification.Name("userSignedOut"))) { _ in
+                    AppStateManager.shared.resetToSplash()
                 }
         }
     }
