@@ -12,6 +12,7 @@ import CoreLocation
 struct EditExpenseView: View {
     @StateObject private var firebaseService = FirebaseService.shared
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.colorScheme) private var colorScheme
     
     let expense: Expense
     
@@ -74,24 +75,38 @@ struct EditExpenseView: View {
                     .ignoresSafeArea()
                 
                 ScrollView {
-                    VStack(spacing: 24) {
-                        formCard
+                    VStack(spacing: 20) {
+                        // Main Form Section
+                        VStack(spacing: 16) {
+                            expenseNameSection
+                            amountSection
+                        }
+                        .padding(.horizontal, 20)
+                        .padding(.vertical, 24)
+                        .background(Color(.systemBackground))
+                        .clipShape(RoundedRectangle(cornerRadius: 20))
+                        .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 2)
                         
-                        categoryCard
+                        // Category Section
+                        categorySection
                         
-                        dateCard
+                        // Date & Time Section
+                        dateTimeSection
                         
-                        locationCard
+                        // Optional Sections
+                        VStack(spacing: 16) {
+                            locationSection
+                            photoSection
+                            descriptionSection
+                        }
                         
-                        photoCard
+                        // Update Button
+                        updateButtonSection
                         
-                        descriptionCard
-                        
-                        updateButton
-                        
-                        Spacer(minLength: 20)
+                        Spacer(minLength: 40)
                     }
-                    .padding()
+                    .padding(.horizontal, 20)
+                    .padding(.top, 10)
                 }
             }
             .navigationTitle("Edit Expense")
@@ -101,6 +116,7 @@ struct EditExpenseView: View {
                     Button("Cancel") {
                         dismiss()
                     }
+                    .foregroundColor(.blue)
                 }
             }
             .alert("Expense Updated!", isPresented: $showingSuccessAlert) {
@@ -125,18 +141,6 @@ struct EditExpenseView: View {
                 Button("Cancel", role: .cancel) { }
             }
             .onAppear {
-                name = expense.name
-                amount = String(format: "%.2f", expense.amount)
-                selectedCategory = expense.category
-                description = expense.description ?? ""
-                location = expense.location ?? ""
-                customCategoryName = expense.customCategoryName ?? ""
-                
-                let calendar = Calendar.current
-                expenseDate = calendar.startOfDay(for: expense.expenseDate)
-                expenseTime = expense.expenseDate
-            }
-            .onAppear {
                 // Pre-populate form with existing expense data
                 name = expense.name
                 amount = String(format: "%.2f", expense.amount)
@@ -144,6 +148,11 @@ struct EditExpenseView: View {
                 expenseDate = expense.expenseDate
                 description = expense.description ?? ""
                 location = expense.location ?? ""
+                customCategoryName = expense.customCategoryName ?? ""
+                
+                let calendar = Calendar.current
+                expenseDate = calendar.startOfDay(for: expense.expenseDate)
+                expenseTime = expense.expenseDate
                 
                 // Load existing photo if available
                 if let photoURL = expense.photoURL {
@@ -153,77 +162,90 @@ struct EditExpenseView: View {
         }
     }
     
-    // MARK: - Static Computed Properties
-    
-    private var headerCard: some View {
-        VStack(spacing: 8) {
-            Text("Edit Expense")
-                .font(.title2)
-                .fontWeight(.semibold)
-                .foregroundColor(.primary)
-            
-            Text("Update your expense details")
-                .font(.subheadline)
-                .foregroundColor(.secondary)
-        }
-        .padding(.vertical)
-    }
-    
-    private var formCard: some View {
-        VStack(spacing: 20) {
-            VStack(alignment: .leading, spacing: 8) {
-                Text("Expense Name")
-                    .font(.subheadline)
-                    .fontWeight(.medium)
-                    .foregroundColor(.secondary)
+    // MARK: - Form Sections
+    private var expenseNameSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                Image(systemName: "tag.fill")
+                    .font(.title3)
+                    .foregroundColor(.blue)
                 
-                TextField("e.g., Coffee, Lunch, Gas", text: $name)
-                    .textFieldStyle(RoundedBorderTextFieldStyle())
-                    .font(.body)
+                Text("Expense Name")
+                    .font(.headline)
+                    .fontWeight(.semibold)
+                    .foregroundColor(.primary)
             }
             
-            VStack(alignment: .leading, spacing: 8) {
-                Text("Amount")
-                    .font(.subheadline)
-                    .fontWeight(.medium)
-                    .foregroundColor(.secondary)
-                
-                HStack {
-                    Text("$")
-                        .font(.title2)
-                        .fontWeight(.medium)
-                        .foregroundColor(.secondary)
-                    
-                    TextField("0.00", text: $amount)
-                        .keyboardType(.decimalPad)
-                        .font(.title2)
-                        .fontWeight(.semibold)
-                }
-                .padding()
+            TextField("e.g., Coffee, Lunch, Gas", text: $name)
+                .font(.body)
+                .padding(.horizontal, 16)
+                .padding(.vertical, 14)
                 .background(Color(.systemGray6))
                 .clipShape(RoundedRectangle(cornerRadius: 12))
-            }
+                .overlay(
+                    RoundedRectangle(cornerRadius: 12)
+                        .stroke(Color(.systemGray4), lineWidth: 1)
+                )
         }
-        .padding()
-        .background(Color(.systemBackground))
-        .clipShape(RoundedRectangle(cornerRadius: 16))
-        .shadow(color: .black.opacity(0.05), radius: 2, x: 0, y: 1)
     }
     
-    private var categoryCard: some View {
+    private var amountSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                Image(systemName: "dollarsign.circle.fill")
+                    .font(.title3)
+                    .foregroundColor(.green)
+                
+                Text("Amount")
+                    .font(.headline)
+                    .fontWeight(.semibold)
+                    .foregroundColor(.primary)
+            }
+            
+            HStack(spacing: 0) {
+                Text("$")
+                    .font(.title)
+                    .fontWeight(.medium)
+                    .foregroundColor(.secondary)
+                    .padding(.leading, 16)
+                
+                TextField("0.00", text: $amount)
+                    .font(.title)
+                    .fontWeight(.semibold)
+                    .keyboardType(.decimalPad)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 14)
+            }
+            .background(Color(.systemGray6))
+            .clipShape(RoundedRectangle(cornerRadius: 12))
+            .overlay(
+                RoundedRectangle(cornerRadius: 12)
+                    .stroke(Color(.systemGray4), lineWidth: 1)
+            )
+        }
+    }
+    
+    // MARK: - Category Section
+    private var categorySection: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text("Category")
-                .font(.subheadline)
-                .fontWeight(.medium)
-                .foregroundColor(.secondary)
+            HStack {
+                Image(systemName: "folder.fill")
+                    .font(.title3)
+                    .foregroundColor(.orange)
+                
+                Text("Category")
+                    .font(.headline)
+                    .fontWeight(.semibold)
+                    .foregroundColor(.primary)
+            }
             
             LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 2), spacing: 12) {
                 ForEach(ExpenseCategory.allCases, id: \.self) { category in
-                    CategoryButton(
+                    ModernCategoryButton(
                         category: category,
                         isSelected: selectedCategory == category
                     ) {
-                        withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                        withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
                             selectedCategory = category
                             if category != .other {
                                 customCategoryName = ""
@@ -234,35 +256,61 @@ struct EditExpenseView: View {
             }
             
             if selectedCategory == .other {
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("Custom Category Name")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
+                VStack(alignment: .leading, spacing: 12) {
+                    HStack {
+                        Image(systemName: "pencil.circle.fill")
+                            .font(.title3)
+                            .foregroundColor(.purple)
+                        
+                        Text("Custom Category")
+                            .font(.headline)
+                            .fontWeight(.semibold)
+                            .foregroundColor(.primary)
+                    }
                     
                     TextField("Enter category name", text: $customCategoryName)
-                        .textFieldStyle(RoundedBorderTextFieldStyle())
                         .font(.body)
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 14)
+                        .background(Color(.systemGray6))
+                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 12)
+                                .stroke(Color(.systemGray4), lineWidth: 1)
+                        )
                 }
-                .transition(.opacity.combined(with: .scale))
+                .transition(.asymmetric(
+                    insertion: .scale.combined(with: .opacity),
+                    removal: .scale.combined(with: .opacity)
+                ))
             }
         }
-        .padding()
+        .padding(.horizontal, 20)
+        .padding(.vertical, 24)
         .background(Color(.systemBackground))
-        .clipShape(RoundedRectangle(cornerRadius: 16))
-        .shadow(color: .black.opacity(0.05), radius: 2, x: 0, y: 1)
+        .clipShape(RoundedRectangle(cornerRadius: 20))
+        .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 2)
     }
     
-    private var dateCard: some View {
+    // MARK: - Date & Time Section
+    private var dateTimeSection: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text("Date & Time")
-                .font(.subheadline)
-                .fontWeight(.medium)
-                .foregroundColor(.secondary)
+            HStack {
+                Image(systemName: "calendar.circle.fill")
+                    .font(.title3)
+                    .foregroundColor(.red)
+                
+                Text("Date & Time")
+                    .font(.headline)
+                    .fontWeight(.semibold)
+                    .foregroundColor(.primary)
+            }
             
-            HStack(spacing: 12) {
+            HStack(spacing: 16) {
                 VStack(alignment: .leading, spacing: 8) {
                     Text("Date")
-                        .font(.caption)
+                        .font(.subheadline)
+                        .fontWeight(.medium)
                         .foregroundColor(.secondary)
                     
                     DatePicker("", selection: $expenseDate, displayedComponents: [.date])
@@ -273,7 +321,8 @@ struct EditExpenseView: View {
                 
                 VStack(alignment: .leading, spacing: 8) {
                     Text("Time")
-                        .font(.caption)
+                        .font(.subheadline)
+                        .fontWeight(.medium)
                         .foregroundColor(.secondary)
                     
                     DatePicker("", selection: $expenseTime, displayedComponents: [.hourAndMinute])
@@ -283,22 +332,38 @@ struct EditExpenseView: View {
                 }
             }
         }
-        .padding()
+        .padding(.horizontal, 20)
+        .padding(.vertical, 24)
         .background(Color(.systemBackground))
-        .clipShape(RoundedRectangle(cornerRadius: 16))
-        .shadow(color: .black.opacity(0.05), radius: 2, x: 0, y: 1)
+        .clipShape(RoundedRectangle(cornerRadius: 20))
+        .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 2)
     }
     
-    private var locationCard: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text("Location (Optional)")
-                .font(.subheadline)
-                .fontWeight(.medium)
-                .foregroundColor(.secondary)
-            
+    // MARK: - Optional Sections
+    private var locationSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
             HStack {
+                Image(systemName: "location.circle.fill")
+                    .font(.title3)
+                    .foregroundColor(.blue)
+                
+                Text("Location (Optional)")
+                    .font(.headline)
+                    .fontWeight(.semibold)
+                    .foregroundColor(.primary)
+            }
+            
+            HStack(spacing: 12) {
                 TextField("Enter location...", text: $location)
-                    .textFieldStyle(RoundedBorderTextFieldStyle())
+                    .font(.body)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 14)
+                    .background(Color(.systemGray6))
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 12)
+                            .stroke(Color(.systemGray4), lineWidth: 1)
+                    )
                 
                 Button(action: {
                     locationManager.requestLocation()
@@ -306,14 +371,18 @@ struct EditExpenseView: View {
                     Image(systemName: "location.circle.fill")
                         .font(.title2)
                         .foregroundColor(.blue)
+                        .frame(width: 44, height: 44)
+                        .background(Color(.systemGray6))
+                        .clipShape(Circle())
                 }
                 .disabled(locationManager.isLoading)
             }
         }
-        .padding()
+        .padding(.horizontal, 20)
+        .padding(.vertical, 24)
         .background(Color(.systemBackground))
-        .clipShape(RoundedRectangle(cornerRadius: 16))
-                .shadow(color: .black.opacity(0.05), radius: 2, x: 0, y: 1)
+        .clipShape(RoundedRectangle(cornerRadius: 20))
+        .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 2)
         .onChange(of: locationManager.locationString) {
             if let newLocation = locationManager.locationString {
                 self.location = newLocation
@@ -321,25 +390,36 @@ struct EditExpenseView: View {
         }
     }
     
-    private var photoCard: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text("Receipt Photo (Optional)")
-                .font(.subheadline)
-                .fontWeight(.medium)
-                .foregroundColor(.secondary)
+    private var photoSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                Image(systemName: "camera.circle.fill")
+                    .font(.title3)
+                    .foregroundColor(.purple)
+                
+                Text("Receipt Photo (Optional)")
+                    .font(.headline)
+                    .fontWeight(.semibold)
+                    .foregroundColor(.primary)
+            }
             
             if let selectedPhoto = selectedPhoto {
-                HStack {
+                HStack(spacing: 16) {
                     Image(uiImage: selectedPhoto)
                         .resizable()
                         .aspectRatio(contentMode: .fill)
-                        .frame(width: 60, height: 60)
-                        .clipShape(RoundedRectangle(cornerRadius: 8))
+                        .frame(width: 80, height: 80)
+                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 12)
+                                .stroke(Color(.systemGray4), lineWidth: 1)
+                        )
                     
-                    VStack(alignment: .leading) {
+                    VStack(alignment: .leading, spacing: 4) {
                         Text("Photo updated")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
+                            .font(.subheadline)
+                            .fontWeight(.medium)
+                            .foregroundColor(.primary)
                         
                         Button("Change Photo") {
                             showingActionSheet = true
@@ -351,75 +431,129 @@ struct EditExpenseView: View {
                     Spacer()
                     
                     Button(action: {
-                        self.selectedPhoto = nil
+                        withAnimation(.spring()) {
+                            self.selectedPhoto = nil
+                        }
                     }) {
                         Image(systemName: "xmark.circle.fill")
-                            .foregroundColor(.gray)
+                            .font(.title2)
+                            .foregroundColor(.red)
                     }
                 }
             } else {
                 Button(action: {
                     showingActionSheet = true
                 }) {
-                    HStack {
-                        Image(systemName: "camera.circle.fill")
-                            .font(.title2)
-                            .foregroundColor(.blue)
-                        
-                        Text(expense.photoURL != nil ? "Update Photo" : "Add Photo")
-                            .foregroundColor(.blue)
+                    HStack(spacing: 12) {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(expense.photoURL != nil ? "Update Photo" : "Add Photo")
+                                .font(.subheadline)
+                                .fontWeight(.medium)
+                                .foregroundColor(.primary)
+                            
+                            Text("Capture or select a receipt")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
                         
                         Spacer()
                         
                         Image(systemName: "chevron.right")
                             .font(.caption)
-                            .foregroundColor(.gray)
+                            .foregroundColor(.secondary)
                     }
-                    .padding()
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 14)
                     .background(Color(.systemGray6))
-                    .clipShape(RoundedRectangle(cornerRadius: 8))
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 12)
+                            .stroke(Color(.systemGray4), lineWidth: 1)
+                    )
                 }
                 .buttonStyle(PlainButtonStyle())
             }
         }
-        .padding()
+        .padding(.horizontal, 20)
+        .padding(.vertical, 24)
         .background(Color(.systemBackground))
-        .clipShape(RoundedRectangle(cornerRadius: 16))
-        .shadow(color: .black.opacity(0.05), radius: 2, x: 0, y: 1)
+        .clipShape(RoundedRectangle(cornerRadius: 20))
+        .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 2)
     }
     
-    private var descriptionCard: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text("Description (Optional)")
-                .font(.subheadline)
-                .fontWeight(.medium)
-                .foregroundColor(.secondary)
+    private var descriptionSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                Image(systemName: "line.3.horizontal.circle.fill")
+                    .font(.title3)
+                    .foregroundColor(.indigo)
+                
+                Text("Description (Optional)")
+                    .font(.headline)
+                    .fontWeight(.semibold)
+                    .foregroundColor(.primary)
+            }
             
             TextField("Add a note about this expense...", text: $description, axis: .vertical)
+                .font(.body)
                 .lineLimit(3...6)
-                .textFieldStyle(RoundedBorderTextFieldStyle())
+                .padding(.horizontal, 16)
+                .padding(.vertical, 14)
+                .background(Color(.systemGray6))
+                .clipShape(RoundedRectangle(cornerRadius: 12))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 12)
+                        .stroke(Color(.systemGray4), lineWidth: 1)
+                )
         }
-        .padding()
+        .padding(.horizontal, 20)
+        .padding(.vertical, 24)
         .background(Color(.systemBackground))
-        .clipShape(RoundedRectangle(cornerRadius: 16))
-        .shadow(color: .black.opacity(0.05), radius: 2, x: 0, y: 1)
+        .clipShape(RoundedRectangle(cornerRadius: 20))
+        .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 2)
     }
     
-    private var updateButton: some View {
-        Button(action: updateExpense) {
-            HStack {
-                if firebaseService.isLoading {
-                    ProgressView()
-                        .scaleEffect(0.9)
-                } else {
-                    Text("Update Expense")
+    // MARK: - Update Button Section
+    private var updateButtonSection: some View {
+        VStack(spacing: 16) {
+            Button(action: updateExpense) {
+                HStack(spacing: 12) {
+                    if firebaseService.isLoading {
+                        ProgressView()
+                            .scaleEffect(0.9)
+                            .tint(.white)
+                    } else {
+                        Image(systemName: "checkmark.circle.fill")
+                            .font(.title3)
+                        
+                        Text("Update Expense")
+                            .font(.headline)
+                            .fontWeight(.semibold)
+                    }
                 }
+                .frame(maxWidth: .infinity)
+                .frame(height: 56)
+                .background((isFormValid && hasChanges) ? Color.orange : Color(.systemGray4))
+                .foregroundColor(.white)
+                .clipShape(RoundedRectangle(cornerRadius: 16))
             }
-            .frame(maxWidth: .infinity)
+            .disabled(!(isFormValid && hasChanges) || firebaseService.isLoading)
+            .scaleEffect(firebaseService.isLoading ? 0.95 : 1.0)
+            .animation(.spring(response: 0.3, dampingFraction: 0.7), value: firebaseService.isLoading)
+            
+            if !isFormValid {
+                Text("Please fill in all required fields")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                    .multilineTextAlignment(.center)
+            } else if !hasChanges {
+                Text("No changes detected")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                    .multilineTextAlignment(.center)
+            }
         }
-        .buttonStyle(.borderedProminent)
-        .controlSize(.large)
-        .disabled(!(isFormValid && hasChanges) || firebaseService.isLoading)
+        .padding(.horizontal, 20)
     }
     
     // MARK: - Helper Functions
@@ -484,8 +618,6 @@ struct EditExpenseView: View {
         }.resume()
     }
 }
-
-
 
 #Preview {
     let sampleExpense = Expense(
