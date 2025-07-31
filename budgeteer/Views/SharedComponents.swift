@@ -11,7 +11,8 @@ import CoreLocation
 
 // MARK: - Location Manager
 
-// A location manager for requesting user's current location with authorization handling.
+/// A location manager for requesting user's current location with authorization handling.
+@MainActor
 class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     private let locationManager = CLLocationManager()
     @Published var locationString: String? = nil
@@ -51,35 +52,31 @@ class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         
         let geocoder = CLGeocoder()
         geocoder.reverseGeocodeLocation(location) { [weak self] placemarks, error in
-            DispatchQueue.main.async {
-                self?.isLoading = false
+            self?.isLoading = false
+            
+            if let placemark = placemarks?.first {
+                var components: [String] = []
                 
-                if let placemark = placemarks?.first {
-                    var components: [String] = []
-                    
-                    if let name = placemark.name {
-                        components.append(name)
-                    }
-                    if let locality = placemark.locality {
-                        components.append(locality)
-                    }
-                    if let state = placemark.administrativeArea {
-                        components.append(state)
-                    }
-                    
-                    let locationString = components.joined(separator: ", ")
-                    print("Location found: \(locationString)")
-                    self?.locationString = locationString
+                if let name = placemark.name {
+                    components.append(name)
                 }
+                if let locality = placemark.locality {
+                    components.append(locality)
+                }
+                if let state = placemark.administrativeArea {
+                    components.append(state)
+                }
+                
+                let locationString = components.joined(separator: ", ")
+                print("Location found: \(locationString)")
+                self?.locationString = locationString
             }
         }
     }
     
     func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
-        DispatchQueue.main.async {
-            self.isLoading = false
-            print("Location failed: \(error.localizedDescription)")
-        }
+        self.isLoading = false
+        print("Location failed: \(error.localizedDescription)")
     }
     
     func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
@@ -91,9 +88,7 @@ class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
             isLoading = true
             locationManager.requestLocation()
         case .denied, .restricted:
-            DispatchQueue.main.async {
-                self.isLoading = false
-            }
+            self.isLoading = false
             print("Location access denied or restricted")
         case .notDetermined:
             print("Location authorization not determined")
@@ -150,6 +145,31 @@ extension DateFormatter {
     static let monthYear: DateFormatter = {
         let formatter = DateFormatter()
         formatter.dateFormat = "MMMM yyyy"
+        return formatter
+    }()
+    
+    static let sectionDate: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "EEEE, MMMM d, yyyy"
+        return formatter
+    }()
+    
+    static let fullDate: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .full
+        return formatter
+    }()
+    
+    static let fullDateTime: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .medium
+        formatter.timeStyle = .short
+        return formatter
+    }()
+    
+    static let timeFormat: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.timeStyle = .short
         return formatter
     }()
 }

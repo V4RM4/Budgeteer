@@ -15,6 +15,7 @@ import UIKit
 // Avoid naming conflicts with Firebase.User
 typealias AppUser = User
 
+@MainActor
 class FirebaseService: ObservableObject {
     static let shared = FirebaseService()
     
@@ -31,22 +32,21 @@ class FirebaseService: ObservableObject {
     
     init() {
         authListener = Auth.auth().addStateDidChangeListener { [weak self] _, user in
-            DispatchQueue.main.async {
-                if let user = user {
-                    self?.isAuthenticated = true
-                    self?.loadUser(userId: user.uid)
-                    // Also try to load expenses directly in case user data loading fails
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-                        if self?.expenses.isEmpty == true {
-                            self?.loadExpensesDirectly(userId: user.uid)
-                        }
+            if let user = user {
+                self?.isAuthenticated = true
+                self?.loadUser(userId: user.uid)
+                // Also try to load expenses directly in case user data loading fails
+                Task {
+                    try? await Task.sleep(for: .seconds(1))
+                    if self?.expenses.isEmpty == true {
+                        self?.loadExpensesDirectly(userId: user.uid)
                     }
-                } else {
-                    self?.isAuthenticated = false
-                    self?.user = nil
-                    self?.expenses = []
-                    self?.expenseListener?.remove()
                 }
+            } else {
+                self?.isAuthenticated = false
+                self?.user = nil
+                self?.expenses = []
+                self?.expenseListener?.remove()
             }
         }
     }
@@ -109,9 +109,7 @@ class FirebaseService: ObservableObject {
         do {
             try Auth.auth().signOut()
         } catch {
-            DispatchQueue.main.async {
-                self.errorMessage = error.localizedDescription
-            }
+            self.errorMessage = error.localizedDescription
         }
     }
     
@@ -173,17 +171,15 @@ class FirebaseService: ObservableObject {
     
     private func loadUser(userId: String) {
         db.collection("users").document(userId).getDocument { [weak self] snapshot, error in
-            DispatchQueue.main.async {
-                if let error = error {
-                    // Only log internal errors, don't show to user
-                    print("Firebase Error (internal): \(error.localizedDescription)")
-                    return
-                }
-                
-                if let data = snapshot?.data(), let user = AppUser.fromDictionary(data) {
-                    self?.user = user
-                    self?.loadExpenses()
-                }
+            if let error = error {
+                // Only log internal errors, don't show to user
+                print("Firebase Error (internal): \(error.localizedDescription)")
+                return
+            }
+            
+            if let data = snapshot?.data(), let user = AppUser.fromDictionary(data) {
+                self?.user = user
+                self?.loadExpenses()
             }
         }
     }
@@ -209,19 +205,17 @@ class FirebaseService: ObservableObject {
             .whereField("userId", isEqualTo: userId)
             .order(by: "createdAt", descending: true)
             .addSnapshotListener { [weak self] snapshot, error in
-                DispatchQueue.main.async {
-                    if let error = error {
-                        // Only log internal errors, don't show to user
-                        print("Firebase Error (internal): \(error.localizedDescription)")
-                        return
-                    }
-                    
-                    let expenses = snapshot?.documents.compactMap { doc in
-                        Expense.fromDictionary(doc.data())
-                    } ?? []
-                    
-                    self?.expenses = expenses
+                if let error = error {
+                    // Only log internal errors, don't show to user
+                    print("Firebase Error (internal): \(error.localizedDescription)")
+                    return
                 }
+                
+                let expenses = snapshot?.documents.compactMap { doc in
+                    Expense.fromDictionary(doc.data())
+                } ?? []
+                
+                self?.expenses = expenses
             }
     }
     

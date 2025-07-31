@@ -16,6 +16,8 @@ struct ExpenseListView: View {
     @State private var showingFilters = false
     @State private var showingAddExpense = false
     @State private var expenseToEdit: Expense?
+    @State private var showingExpenseDetail = false
+    @State private var expenseIdToView: String?
     
     var filteredExpenses: [Expense] {
         var expenses = firebaseService.expenses
@@ -31,6 +33,7 @@ struct ExpenseListView: View {
             expenses = expenses.filter { expense in
                 expense.name.localizedCaseInsensitiveContains(searchText) ||
                 expense.category.rawValue.localizedCaseInsensitiveContains(searchText) ||
+                expense.categoryDisplayName.localizedCaseInsensitiveContains(searchText) ||
                 (expense.description?.localizedCaseInsensitiveContains(searchText) ?? false) ||
                 (expense.location?.localizedCaseInsensitiveContains(searchText) ?? false)
             }
@@ -85,6 +88,16 @@ struct ExpenseListView: View {
             }
             .sheet(item: $expenseToEdit) { expense in
                 EditExpenseView(expense: expense)
+            }
+            .sheet(isPresented: $showingExpenseDetail) {
+                if let expenseId = expenseIdToView {
+                    ExpenseDetailView(expenseId: expenseId)
+                }
+            }
+            .onChange(of: showingExpenseDetail) {
+                if !showingExpenseDetail {
+                    expenseIdToView = nil
+                }
             }
         }
     }
@@ -189,7 +202,8 @@ struct ExpenseListView: View {
                         ExpenseListRowView(expense: expense)
                             .contentShape(Rectangle())
                             .onTapGesture {
-                                expenseToEdit = expense
+                                expenseIdToView = expense.id
+                                showingExpenseDetail = true
                             }
                             .swipeActions(edge: .trailing, allowsFullSwipe: true) {
                                 Button("Delete", role: .destructive) {
@@ -293,7 +307,7 @@ struct ExpenseListRowView: View {
                 
                 HStack(spacing: 8) {
                     // Category tag with capsule styling
-                    Text(expense.category.rawValue)
+                    Text(expense.categoryDisplayName)
                         .font(.caption)
                         .fontWeight(.medium)
                         .padding(.horizontal, 10)
@@ -302,21 +316,6 @@ struct ExpenseListRowView: View {
                         .foregroundColor(getCategoryColor())
                         .clipShape(Capsule())
                     
-                    // Description indicator
-                    if let description = expense.description, !description.isEmpty {
-                        HStack(spacing: 3) {
-                            Image(systemName: "text.bubble.fill")
-                                .font(.caption2)
-                                .foregroundColor(.secondary)
-                            
-                            Text(description)
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                                .lineLimit(1)
-                        }
-                    }
-                    
-                    // Photo indicator
                     if expense.photoURL != nil {
                         Image(systemName: "camera.fill")
                             .font(.caption)
@@ -543,22 +542,6 @@ struct FilterChip: View {
         default: return .gray
         }
     }
-}
-
-extension DateFormatter {
-    static let sectionDate: DateFormatter = {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "EEEE, MMMM d, yyyy"
-        return formatter
-    }()
-    
-    static let timeFormat: DateFormatter = {
-        let formatter = DateFormatter()
-        formatter.timeStyle = .short
-        return formatter
-    }()
-    
-
 }
 
 #Preview {

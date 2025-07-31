@@ -20,6 +20,8 @@ struct Expense: Codable, Identifiable {
     var amount: Double
     /// The category this expense belongs to
     var category: ExpenseCategory
+    /// Custom category name when category is "other"
+    var customCategoryName: String?
     /// When this expense record was created
     let createdAt: Date
     /// The actual date when the expense occurred
@@ -42,8 +44,9 @@ struct Expense: Codable, Identifiable {
     ///   - description: Optional description providing additional details.
     ///   - photoURL: Optional URL to the receipt photo.
     ///   - location: Optional location where the expense occurred.
+    ///   - customCategoryName: Custom category name when category is "other".
     ///   - createdAt: When this expense record was created. Defaults to current date.
-    init(id: String = UUID().uuidString, userId: String, name: String, amount: Double, category: ExpenseCategory, expenseDate: Date = Date(), description: String? = nil, photoURL: String? = nil, location: String? = nil, createdAt: Date = Date()) {
+    init(id: String = UUID().uuidString, userId: String, name: String, amount: Double, category: ExpenseCategory, expenseDate: Date = Date(), description: String? = nil, photoURL: String? = nil, location: String? = nil, customCategoryName: String? = nil, createdAt: Date = Date()) {
         self.id = id
         self.userId = userId
         self.name = name
@@ -53,7 +56,16 @@ struct Expense: Codable, Identifiable {
         self.description = description
         self.photoURL = photoURL
         self.location = location
+        self.customCategoryName = customCategoryName
         self.createdAt = createdAt
+    }
+    
+    /// Returns the display name for the category (custom name for "other", raw value otherwise)
+    var categoryDisplayName: String {
+        if category == .other, let customName = customCategoryName, !customName.isEmpty {
+            return customName
+        }
+        return category.rawValue
     }
 }
 
@@ -121,6 +133,10 @@ extension Expense {
             dict["location"] = location
         }
         
+        if let customCategoryName = customCategoryName {
+            dict["customCategoryName"] = customCategoryName
+        }
+        
         return dict
     }
     
@@ -138,6 +154,7 @@ extension Expense {
         let description = dict["description"] as? String
         let photoURL = dict["photoURL"] as? String
         let location = dict["location"] as? String
+        let customCategoryName = dict["customCategoryName"] as? String
         
         // Handle backward compatibility for expenseDate
         let expenseDate: Date
@@ -158,6 +175,7 @@ extension Expense {
             description: description,
             photoURL: photoURL,
             location: location,
+            customCategoryName: customCategoryName,
             createdAt: createdAtTimestamp.dateValue()
         )
     }
