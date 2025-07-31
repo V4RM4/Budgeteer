@@ -7,6 +7,7 @@
 
 import SwiftUI
 import FirebaseAuth
+import Combine
 
 struct AuthenticationView: View {
     @StateObject private var authViewModel = AuthenticationViewModel()
@@ -21,6 +22,7 @@ struct AuthenticationView: View {
     @State private var showPassword = false
     @State private var showConfirmPassword = false
     @State private var authFlow: AuthFlow = .email
+    @State private var keyboardHeight: CGFloat = 0
     
     enum AuthFlow {
         case email          // Show email field only
@@ -72,6 +74,15 @@ struct AuthenticationView: View {
         }
         .animation(.smooth(duration: 0.4), value: authFlow)
         .animation(.smooth(duration: 0.3), value: authViewModel.errorMessage)
+        .ignoresSafeArea(.keyboard, edges: .bottom)
+        .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillShowNotification)) { notification in
+            if let keyboardFrame = notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect {
+                keyboardHeight = keyboardFrame.height
+            }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillHideNotification)) { _ in
+            keyboardHeight = 0
+        }
     }
     
     // MARK: - Header Section
