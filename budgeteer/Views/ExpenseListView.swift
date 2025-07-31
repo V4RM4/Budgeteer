@@ -7,7 +7,6 @@
 
 import SwiftUI
 
-/// A view displaying a list of user expenses with search, filter, and management capabilities.
 struct ExpenseListView: View {
     @StateObject private var firebaseService = FirebaseService.shared
     @State private var searchText = ""

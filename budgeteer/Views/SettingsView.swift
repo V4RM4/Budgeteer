@@ -17,12 +17,10 @@ struct SettingsView: View {
     var body: some View {
         NavigationStack {
             List {
-                // Profile Section
                 Section {
                     profileContent
                 }
                 
-                // Budget Section
                 Section {
                     budgetContent
                 } header: {
@@ -123,7 +121,7 @@ struct SettingsView: View {
                     }
                 }
             } message: {
-                Text("⚠️ WARNING: This will permanently delete your account, all expenses, and cannot be undone. You will lose all your data forever.")
+                Text("WARNING: This will permanently delete your account, all expenses, and cannot be undone. You will lose all your data forever.")
             }
             .alert("Error", isPresented: $showingErrorAlert) {
                 Button("OK", role: .cancel) {

@@ -7,7 +7,6 @@
 
 import SwiftUI
 
-/// The root view that manages authentication state and displays appropriate content.
 struct ContentView: View {
     @StateObject private var firebaseService = FirebaseService.shared
     
@@ -16,14 +15,13 @@ struct ContentView: View {
             if firebaseService.isAuthenticated {
                 MainTabView()
             } else {
-                LoginView()
+                AuthenticationView()
             }
         }
         .animation(.easeInOut(duration: 0.3), value: firebaseService.isAuthenticated)
     }
 }
 
-/// The main tab view containing the primary app navigation.
 struct MainTabView: View {
     var body: some View {
         TabView {
