@@ -32,18 +32,18 @@ struct AuthenticationView: View {
     }
     
     private var canProceedWithEmail: Bool {
-        authViewModel.isEmailValid && !authViewModel.isLoading
+        authViewModel.isEmailValid && !authViewModel.isEmailLoading
     }
     
     private var canSignIn: Bool {
-        !password.isEmpty && !authViewModel.isLoading
+        !password.isEmpty && !authViewModel.isEmailLoading
     }
     
     private var canSignUp: Bool {
         !fullName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty &&
         password.count >= 6 &&
         password == confirmPassword &&
-        !authViewModel.isLoading
+        !authViewModel.isEmailLoading
     }
     
     var body: some View {
@@ -372,7 +372,7 @@ struct AuthenticationView: View {
     private var continueButton: some View {
         Button(action: proceedToSignIn) {
             HStack {
-                if authViewModel.isLoading {
+                if authViewModel.isEmailLoading {
                     ProgressView()
                         .progressViewStyle(CircularProgressViewStyle(tint: .white))
                         .scaleEffect(0.9)
@@ -396,7 +396,7 @@ struct AuthenticationView: View {
     private var signInButton: some View {
         Button(action: attemptSignIn) {
             HStack {
-                if authViewModel.isLoading {
+                if authViewModel.isEmailLoading {
                     ProgressView()
                         .progressViewStyle(CircularProgressViewStyle(tint: .white))
                         .scaleEffect(0.9)
@@ -420,7 +420,7 @@ struct AuthenticationView: View {
     private var createAccountButton: some View {
         Button(action: signUp) {
             HStack {
-                if authViewModel.isLoading {
+                if authViewModel.isEmailLoading {
                     ProgressView()
                         .progressViewStyle(CircularProgressViewStyle(tint: .white))
                         .scaleEffect(0.9)
@@ -462,7 +462,7 @@ struct AuthenticationView: View {
     private var googleSignInButton: some View {
         Button(action: signInWithGoogle) {
             HStack(spacing: 12) {
-                if authViewModel.isLoading {
+                if authViewModel.isGoogleLoading {
                     ProgressView()
                         .progressViewStyle(CircularProgressViewStyle(tint: .primary))
                         .scaleEffect(0.9)
@@ -489,7 +489,7 @@ struct AuthenticationView: View {
                     }
             }
         }
-        .disabled(authViewModel.isLoading)
+        .disabled(authViewModel.isGoogleLoading)
         .buttonStyle(.plain)
     }
     

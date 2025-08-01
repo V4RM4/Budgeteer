@@ -62,7 +62,7 @@ struct WalkthroughView: View {
                 // Skip button
                 HStack {
                     Spacer()
-                                            Button("Skip") {
+                            Button("Skip") {
                             NotificationCenter.default.post(name: Notification.Name("walkthroughCompleted"), object: nil)
                         }
                     .font(.subheadline)
@@ -108,24 +108,24 @@ struct WalkthroughView: View {
                         }
                     }
                     
-                    // Get Started button - only show on last page
-                    if currentPage == walkthroughData.count - 1 {
-                        Button(action: {
-                            NotificationCenter.default.post(name: Notification.Name("walkthroughCompleted"), object: nil)
-                        }) {
-                            HStack {
-                                Text("Get Started")
-                                    .font(.headline)
-                                    .fontWeight(.semibold)
-                            }
-                            .foregroundColor(.white)
-                            .frame(maxWidth: .infinity)
-                            .frame(height: 56)
-                            .background(Color.accentColor)
-                            .clipShape(RoundedRectangle(cornerRadius: 16))
+                    // Get Started button - reserve space even when not visible
+                    Button(action: {
+                        NotificationCenter.default.post(name: Notification.Name("walkthroughCompleted"), object: nil)
+                    }) {
+                        HStack {
+                            Text("Get Started")
+                                .font(.headline)
+                                .fontWeight(.semibold)
                         }
-                        .padding(.horizontal, 24)
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 56)
+                        .background(Color.accentColor)
+                        .clipShape(RoundedRectangle(cornerRadius: 16))
                     }
+                    .padding(.horizontal, 24)
+                    .opacity(currentPage == walkthroughData.count - 1 ? 1 : 0)
+                    .animation(.easeInOut(duration: 0.3), value: currentPage)
                 }
                 .padding(.bottom, 40)
             }
