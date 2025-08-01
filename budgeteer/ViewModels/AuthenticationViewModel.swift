@@ -13,6 +13,8 @@ import FirebaseAuth
 final class AuthenticationViewModel: ObservableObject {
     @Published var email = ""
     @Published var isLoading = false
+    @Published var isEmailLoading = false
+    @Published var isGoogleLoading = false
     @Published var errorMessage: String?
     
     private let firebaseService = FirebaseService.shared
@@ -27,14 +29,14 @@ final class AuthenticationViewModel: ObservableObject {
     
     func signIn(email: String, password: String) async {
         guard !email.isEmpty, !password.isEmpty else { return }
-        isLoading = true
+        isEmailLoading = true
         errorMessage = nil
         
         await firebaseService.signIn(email: email, password: password)
         
         // Update local state based on FirebaseService result
         await MainActor.run {
-            self.isLoading = false
+            self.isEmailLoading = false
             if let error = firebaseService.errorMessage {
                 self.errorMessage = error
             }
@@ -45,14 +47,14 @@ final class AuthenticationViewModel: ObservableObject {
     // Firebase Auth automatically prevents duplicate emails with emailAlreadyInUse error
     func createAccount(email: String, fullName: String, password: String) async {
         guard !email.isEmpty, !fullName.isEmpty, password.count >= 6 else { return }
-        isLoading = true
+        isEmailLoading = true
         errorMessage = nil
         
         await firebaseService.signUp(email: email, password: password, username: fullName, monthlyBudget: 1000.0)
         
         // Update local state based on FirebaseService result
         await MainActor.run {
-            self.isLoading = false
+            self.isEmailLoading = false
             if let error = firebaseService.errorMessage {
                 self.errorMessage = error
             }
@@ -62,14 +64,14 @@ final class AuthenticationViewModel: ObservableObject {
     // MARK: - Google Sign-In Methods
     
     func signInWithGoogle() async {
-        isLoading = true
+        isGoogleLoading = true
         errorMessage = nil
         
         // Check if Google Sign-In is available
         guard GIDSignIn.sharedInstance.hasPreviousSignIn() || GIDSignIn.sharedInstance.configuration != nil else {
             await MainActor.run {
                 self.errorMessage = "Google Sign-In is not properly configured"
-                self.isLoading = false
+                self.isGoogleLoading = false
             }
             return
         }
@@ -77,7 +79,7 @@ final class AuthenticationViewModel: ObservableObject {
         guard let presentingViewController = (UIApplication.shared.connectedScenes.first as? UIWindowScene)?.windows.first?.rootViewController else {
             await MainActor.run {
                 self.errorMessage = "Unable to present Google Sign-In"
-                self.isLoading = false
+                self.isGoogleLoading = false
             }
             return
         }
@@ -88,7 +90,7 @@ final class AuthenticationViewModel: ObservableObject {
             guard let idToken = result.user.idToken?.tokenString else {
                 await MainActor.run {
                     self.errorMessage = "Failed to get ID token from Google"
-                    self.isLoading = false
+                    self.isGoogleLoading = false
                 }
                 return
             }
@@ -106,7 +108,7 @@ final class AuthenticationViewModel: ObservableObject {
                 await MainActor.run {
                     firebaseService.user = user
                     firebaseService.isAuthenticated = true
-                    self.isLoading = false
+                    self.isGoogleLoading = false
                 }
                 firebaseService.loadExpenses()
             } else {
@@ -124,14 +126,14 @@ final class AuthenticationViewModel: ObservableObject {
                 await MainActor.run {
                     firebaseService.user = newUser
                     firebaseService.isAuthenticated = true
-                    self.isLoading = false
+                    self.isGoogleLoading = false
                 }
             }
             
         } catch {
             await MainActor.run {
                 self.errorMessage = self.getUserFriendlyErrorMessage(error)
-                self.isLoading = false
+                self.isGoogleLoading = false
             }
         }
     }
